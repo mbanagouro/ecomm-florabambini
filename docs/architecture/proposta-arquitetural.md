@@ -1,8 +1,10 @@
 # Proposta Arquitetural — Flora Bambini (e-commerce local)
 
-> Cliente: interno (projeto pessoal — Michel Banagouro) · Documento gerado em 2026-09-16 · Versão 0.3
+> Cliente: interno (projeto pessoal — Michel Banagouro) · Documento gerado em 2026-09-16 · Versão 0.5
 >
 > **Histórico**
+> - v0.5 — navegação por categorias hierárquicas (ADR-010): árvore auto-relacionada de profundidade livre, em que `Flora` e `Bambini` são as categorias raiz; produto em uma única categoria; marca como entidade própria e filtro, fora da hierarquia.
+> - v0.4 — alerta de venda para a administradora quando o pedido é pago (ADR-009). O pedido original era notificação no WhatsApp pessoal; o canal virou **Telegram (principal) + e-mail (redundante)** por custo e termos de uso, o que mantém intacto o não-objetivo de integração com WhatsApp Business API (§2.3).
 > - v0.3 — gateway alterado de PagBank para **InfinitePay**; ADR-003 reescrito: como o webhook do InfinitePay não é assinado, ele passa a ser tratado como gatilho e a confirmação vem de consulta ativa ao gateway. CPF removido do cadastro (o InfinitePay não o exige e não há NF-e); telefone celular incluído por finalidade de entrega.
 > - v0.2 — carrinho promovido a agregado próprio, anônimo e persistido (ADR-008); ADR-007 reescrito para converter carrinho em pedido apenas na conclusão do checkout; gênero e data de nascimento removidos do cadastro por minimização de dados (LGPD).
 
@@ -19,7 +21,7 @@ As decisões de maior consequência são quatro, e todas trocam flexibilidade po
 3. **Frete por faixa de CEP, isolado atrás de uma abstração.** O MVP não depende de nenhuma API de geolocalização. A troca futura para cálculo por raio em quilômetros é uma implementação nova da mesma interface, sem tocar no checkout.
 4. **Carrinho e pedido são coisas separadas.** A cliente monta o carrinho sem se identificar; o pedido só nasce na conclusão do checkout, quando o carrinho é convertido. Isso permite comprar antes de criar conta e mantém o estoque livre durante toda a navegação — só o intervalo curto entre concluir o checkout e confirmar o pagamento segura produto.
 
-**Restrições declaradas** (detalhadas na seção 4): plataforma ASP.NET Core MVC .NET 10, hospedagem Azure App Service com Azure SQL, teto de custo mensal de infraestrutura de aproximadamente R$ 100, envio de e-mail por SMTP, e desenvolvimento por uma única pessoa apoiada por agente de IA.
+**Restrições declaradas** (detalhadas na seção 4): plataforma ASP.NET Core MVC .NET 10, hospedagem Azure App Service com Azure SQL, teto de custo mensal de infraestrutura de aproximadamente R$ 100, envio de e-mail por SMTP, aviso imediato de venda paga no celular da administradora, e desenvolvimento por uma única pessoa apoiada por agente de IA.
 
 Esta proposta não estima esforço, custo de desenvolvimento nem cronograma — ver seção 12.
 
@@ -55,11 +57,11 @@ Explicitamente **fora** do escopo, para que nenhuma decisão arquitetural seja t
 
 - **Venda para fora da cidade.** Sem integração com Correios, transportadora ou cálculo de frete nacional. O sistema deve inclusive **recusar** CEPs fora da área atendida.
 - **Emissão de nota fiscal.** Sem NF-e/NFC-e, sem certificado digital, sem campos fiscais (NCM, CFOP, CST) no cadastro de produto. Se um dia entrar, entra como módulo novo.
-- **Busca textual no catálogo.** Com menos de 100 produtos, a navegação por categoria resolve. Sem índice de busca, sem Elasticsearch, sem `FULLTEXT`.
+- **Busca textual no catálogo.** Com menos de 100 produtos, a navegação por categoria resolve. Sem índice de busca, sem Elasticsearch, sem `FULLTEXT`. A contrapartida é que a hierarquia passa a ser o **único** caminho da cliente até o produto — o que transfere para o desenho das categorias (ADR-010) o peso que uma busca aliviaria.
 - **Aplicativo móvel.** Site responsivo apenas.
 - **Multi-loja / multi-tenant.** Uma loja, um dono.
 - **Marketplace ou vendedores terceiros.**
-- **Integração com ERP, marketplace ou WhatsApp Business API.** O WhatsApp continua existindo como canal humano paralelo, mas fora do sistema.
+- **Integração com ERP, marketplace ou WhatsApp Business API.** O WhatsApp continua existindo como canal humano paralelo, mas fora do sistema. O aviso automático de venda para a administradora sai por Telegram e e-mail, justamente para não trazer a API do WhatsApp para dentro do escopo (ADR-009).
 - **Alta disponibilidade.** Indisponibilidade de minutos é tolerável e não gera prejuízo mensurável nesse volume.
 
 ### 2.4 Usuários e cargas esperadas
@@ -123,6 +125,8 @@ Tudo abaixo é **dado de entrada**, não escolha arquitetural. Onde a restriçã
 | Escopo fiscal | Sem emissão de nota fiscal | Decisão do usuário | Sem campos fiscais no domínio |
 | Privacidade | Cadastro coleta **apenas nome completo, e-mail e celular**, mais o endereço de entrega. **Não** são coletados gênero, data de nascimento nem CPF | Decisão do usuário — minimização de dados (LGPD) | Celular tem finalidade clara: a entrega é feita pela própria vendedora e ela precisa falar com a cliente na porta. CPF saiu porque o InfinitePay não o exige e não há emissão de nota fiscal |
 | Carrinho | Carrinho pode existir sem cliente identificado, e é convertido em pedido apenas na conclusão do checkout | Decisão do usuário | Carrinho é agregado próprio, não rascunho de pedido (ADR-008) |
+| Catálogo | Navegação por categorias hierárquicas (`Flora > Cabelo`, `Bambini > Pele`), com cada produto em **uma única** categoria e identificação da **marca** do fabricante | Decisão do usuário | Como não há busca textual (§2.3), a hierarquia é o único caminho até o produto. Modelagem e efeito sobre URL tratados no ADR-010 |
+| Notificação | A administradora deve ser avisada no celular assim que um pedido for pago, sem depender de abrir o painel | Decisão do usuário | O pedido original era mensagem no WhatsApp pessoal dela. O canal foi trocado por Telegram + e-mail depois de avaliar custo e termos de uso (ADR-009) — o requisito de negócio é o aviso imediato, não o aplicativo |
 | Time | 1 desenvolvedor, não dedicado, apoiado por agente de IA | Situação real | Favorece convenções padrão e amplamente documentadas sobre soluções idiomáticas de nicho |
 
 ---
@@ -294,6 +298,51 @@ Tudo abaixo é **dado de entrada**, não escolha arquitetural. Onde a restriçã
   - Positivas: navegação e montagem de carrinho não consomem estoque; carrinho sobrevive a deploy, reinício e fechamento do navegador; nada se perde na transição de anônimo para identificado; base pronta para recuperação de carrinho abandonado no futuro.
   - Negativas / dívidas plantadas: mais uma rotina de limpeza para manter (carrinhos órfãos crescem indefinidamente sem ela). Como o preço não é congelado, **o valor pode mudar entre adicionar e finalizar** — a tela de checkout precisa deixar isso explícito em vez de alterar o total em silêncio. O cookie de carrinho é dado de navegação e deve constar no aviso de cookies do site.
 
+### ADR-009: Alerta de venda paga para a administradora por Telegram e e-mail, com destino editável no painel
+
+- **Contexto**: requisito declarado pelo usuário (§4) — quando um pedido é pago, a administradora precisa saber na hora, sem depender de abrir o painel. Hoje ela descobre cada venda naturalmente, porque é ela quem conduz a conversa do início ao fim (§2.1); automatizar o fluxo remove essa consciência como efeito colateral. Como a entrega é feita por ela mesma em raio curto e no mesmo dia, pedido pago que dorme sem ninguém ver é atraso de entrega. O pedido original era mensagem no WhatsApp pessoal dela.
+- **Decisão**: o sistema envia um **alerta operacional** à administradora quando um pedido é confirmado como pago, por **Telegram como canal principal e e-mail como canal redundante**. O alerta é disparado **depois** da confirmação por `payment_check` e da gravação do estado `Pago` (ADR-003), **fora da transação**, como trabalho assíncrono no próprio processo (ADR-006). É **idempotente por pedido**: o pedido registra que já foi notificado, de modo que reentrega de webhook e conciliação periódica não geram alerta repetido. O destino — identificador do chat de Telegram e endereço de e-mail — é **configuração em banco, editável no painel** (§3.4). **Falha de envio nunca afeta o pedido**: fica registrada em log, aparece no painel como alerta pendente e é retentada com espera progressiva. O conteúdo é mínimo: número do pedido, valor total, quantidade de itens e link para o pedido no painel — **sem endereço e sem telefone da cliente**. O escopo é apenas o evento "pedido pago online"; pagamento na entrega e demais transições ficam fora por ora.
+- **Justificativa**:
+  - O destinatário é a **operadora do sistema, não a cliente**. Isso é o que mantém a decisão pequena: um destinatário fixo, nenhum consentimento de terceiro sob LGPD e nenhuma régua de comunicação a desenhar. É alerta de operação, não funcionalidade de produto.
+  - **Telegram como canal principal** porque o bot é gratuito, a criação leva minutos, a API é uma chamada HTTP e não há assinatura mensal disputando o teto de R$ 100 (§4) — que é a restrição mais apertada do projeto.
+  - **E-mail como redundância** porque o provedor SMTP já existe no projeto (ADR-004): o custo marginal é zero e o ganho é um segundo caminho independente para a única notícia do sistema que não pode se perder. Dois canais baratos valem mais que um canal caro.
+  - **Disparar depois do commit** porque o alerta é efeito colateral, não parte da venda. Enviar dentro da transação acoplaria a confirmação do pagamento à disponibilidade de um serviço externo — o mesmo motivo pelo qual o e-mail transacional já é assíncrono (ADR-006).
+  - **Idempotência por pedido** porque o webhook reentrega por desenho e a conciliação executa exatamente o mesmo procedimento (ADR-003). Sem marca no pedido, uma venda renderia vários alertas — e o destino de um canal que repete é ser ignorado.
+  - **Conteúdo mínimo** porque a mensagem sai do controle do sistema e fica no histórico de um serviço de terceiro, no aparelho dela e no do provedor. O dado pessoal da cliente está no painel, atrás de autenticação (§3.2); a mensagem só precisa dizer "entrou uma venda, vá ver".
+  - **Destino no painel e não em configuração de deploy** porque trocar de celular, de chat ou de e-mail não pode exigir desenvolvedor nem publicação (§3.4).
+- **Alternativas consideradas**:
+  - **WhatsApp Cloud API oficial da Meta** — descartada para o MVP, apesar de ser o canal que ela já usa todos os dias. Exige conta Meta Business, um número **dedicado** (o número pessoal dela já está ativo no WhatsApp comum e não pode ser migrado sem perder o uso atual, que é o canal de venda vigente) e um template `utility` submetido à aprovação. É muito processo e mais uma dependência paga para entregar um aviso a uma única pessoa.
+  - **Provedor intermediário de WhatsApp (Z-API, Twilio e similares)** — descartada por custo: a assinatura mensal está na mesma ordem de grandeza do teto **inteiro** de infraestrutura (§4), para substituir uma notificação que o Telegram entrega de graça.
+  - **Biblioteca não-oficial pareando o número pessoal (Baileys, Evolution API)** — descartada por risco desproporcional. Viola os termos de uso do WhatsApp, e o que está em jogo na punição é o **banimento do número pessoal da vendedora** — hoje o principal ativo comercial do negócio. Economizar alguns reais arriscando o canal que sustenta a operação é uma troca ruim em qualquer cenário.
+  - **Apenas e-mail** — descartada como canal único: e-mail não interrompe, e a mesma caixa recebe cobrança de boleto e promoção. Serve bem como redundância, mal como aviso urgente.
+  - **Notificação push do navegador** — descartada: depende de ela conceder permissão e manter o site instalado, com comportamento historicamente irregular em iOS. Fragilidade alta para um requisito simples.
+  - **Nenhum alerta, apenas o painel** — descartada: transfere para ela a disciplina de consultar o painel por hábito, que é exatamente o tipo de trabalho manual que o projeto existe para remover (§2.2).
+- **Consequências**:
+  - Positivas: a venda chega ao bolso dela em segundos, sem abrir o painel; nenhum custo novo de infraestrutura; nenhum dado pessoal de cliente trafega para o serviço de terceiro; o mecanismo criado serve depois, sem retrabalho, para outros alertas operacionais já previstos — divergência de conciliação (§10) e estoque zerado.
+  - Negativas / dívidas plantadas: **o canal não é o que ela pediu.** Telegram exige que ela instale e acompanhe um aplicativo que não usa hoje, e essa adoção é pré-requisito de funcionamento — se ela não abre o Telegram, o alerta degrada para o e-mail, que é justamente o canal fraco. Vale revisitar a rota oficial do WhatsApp quando houver número dedicado disponível. Além disso, entra mais uma dependência externa e mais um segredo: **o token do bot dá controle total sobre ele** e precisa viver em configuração de aplicação, nunca no repositório. Por fim, alerta que falha em silêncio não é percebido por ninguém — é o que torna obrigatória a exibição de alerta pendente no painel, e não apenas o registro em log.
+
+### ADR-010: Categorias como árvore auto-relacionada de profundidade livre, com a linha sendo a categoria raiz e a marca como dimensão separada
+
+- **Contexto**: requisito declarado pelo usuário — a cliente navega por caminhos como `Flora > Cabelo` e `Bambini > Pele`, e cada produto pertence a **exatamente uma** categoria. As linhas `Flora` e `Bambini` organizam o catálogo no topo; produtos de limpeza entram como categoria dentro de uma linha existente, não como terceira linha. Produto também precisa identificar a **marca** do fabricante. Como não há busca textual (§2.3), a navegação por categoria é o **único** caminho da cliente até o produto — o que eleva essa modelagem de detalhe de catálogo a decisão estrutural.
+- **Decisão**: uma única entidade **`Categoria` auto-relacionada** (`Id`, `Nome`, `Slug`, `CategoriaPaiId` nulo), de **profundidade livre**. **Não existe entidade `Linha`**: `Flora` e `Bambini` são simplesmente as categorias raiz, isto é, aquelas sem pai. O **produto aponta para uma única categoria**, normalmente uma folha. A listagem de qualquer categoria exibe os produtos **dela e de todos os seus descendentes** — abrir `Flora` mostra o que existe em `Flora > Cabelo > Shampoo`. A **URL reflete o caminho** (`/flora/cabelo/shampoo`), com o slug único **entre irmãos**, não globalmente, de modo que `Cabelo` possa existir sob as duas linhas. A árvore inteira é **lida em memória e mantida em cache no processo**, invalidado quando a administradora edita a estrutura — não há consulta recursiva no caminho quente. A **marca é entidade própria**, referenciada pelo produto, e funciona como **filtro dentro da listagem de categoria**; ela **não** tem página nem URL próprias. O domínio impõe três guardas: uma categoria não pode ser descendente de si mesma, há **profundidade máxima configurada**, e categoria com filhos ou com produtos **não pode ser excluída**.
+- **Justificativa**:
+  - **Uma entidade e não duas** (`Linha` + `Categoria`) porque linha e categoria têm exatamente os mesmos atributos e comportamentos — nome, slug, ordem, listagem, breadcrumb. Separá-las duplicaria tela de admin, consulta e regra de URL para expressar uma diferença que é apenas de posição na árvore. Como efeito, criar uma terceira linha no futuro deixa de ser mudança de modelo e passa a ser cadastro.
+  - **Profundidade livre, e não dois níveis fixos**, foi escolha consciente do usuário: o custo de acertar a estrutura depois — com URLs já indexadas — é bem maior que o custo de suportá-la agora. Um catálogo de produtos naturais divide-se naturalmente além de dois níveis (`Cabelo > Shampoo`, `Cabelo > Condicionador`), e descobrir isso depois do lançamento significaria migrar dados e perder endereço já conhecido pelo Google.
+  - **Listar descendentes** porque o contrário torna a categoria raiz inútil: quem clica em `Flora` espera ver a linha inteira, não uma página com três links e nenhum produto. É também o que permite à administradora subdividir uma categoria sem esvaziar a página que estava funcionando.
+  - **Árvore em memória** porque ela é minúscula (dezenas de nós, §2.4) e muda poucas vezes por mês, enquanto o menu é renderizado em **toda** requisição da loja. Trocar uma consulta recursiva por requisição por uma leitura de memória é o tipo de economia que importa no tier Basic (ADR-002), que é onde o projeto tem menos folga. Cache **no processo**, não distribuído, é coerente com a instância única (ADR-002, ADR-006) — não há segundo nó para manter em sincronia.
+  - **Slug único entre irmãos e não global** porque o requisito original é precisamente que `Cabelo` exista sob `Flora` **e** sob `Bambini`. Unicidade global forçaria nomes artificiais como `cabelo-bambini` na barra de endereços.
+  - **Marca fora da árvore** porque marca não é lugar, é atributo: ela atravessa categorias e linhas, e enfiá-la na hierarquia obrigaria a duplicar o galho inteiro por fabricante. Como filtro dentro da categoria, ela responde "qual shampoo da marca X" sem criar caminho concorrente até o mesmo produto — o que também evita conteúdo duplicado para buscadores.
+  - **Guardas no domínio** porque árvore livre editável por uma pessoa sem apoio técnico é onde nascem ciclos, aninhamento acidental de dez níveis e exclusão que deixa produto órfão. Nenhum dos três é recuperável pela tela; todos são baratos de impedir na entidade.
+- **Alternativas consideradas**:
+  - **Dois níveis fixos (`Linha` > `Categoria`)** — descartada pelo usuário, apesar de mais simples: consulta trivial e nenhum risco de labirinto. Perderia a subdivisão futura sem migração, que é o custo que ele escolheu evitar.
+  - **Duas dimensões ortogonais (`Linha` × `Categoria`)** — descartada porque o produto pertence a exatamente uma linha. Esse desenho só se paga quando o mesmo item vive nas duas — um shampoo servindo mãe e bebê ao mesmo tempo — e não é o caso.
+  - **Caminho materializado** (`/flora/cabelo/` gravado em coluna) — descartada por ora: acelera a leitura de subárvore, mas exige reescrever o caminho de todos os descendentes a cada movimentação de nó. Com a árvore inteira em memória, o ganho desaparece. Fica como a primeira carta a jogar se o catálogo crescer uma ordem de grandeza.
+  - **Marca como nível da árvore** — descartada: multiplicaria galhos, criaria duas URLs para o mesmo produto e obrigaria a recadastrar a subárvore a cada fabricante novo.
+  - **Marca como texto livre no produto** — descartada: sem entidade não há filtro confiável, e a mesma marca acaba grafada de três formas diferentes no cadastro.
+- **Consequências**:
+  - Positivas: a estrutura de navegação é **dado editável pela administradora**, não código (§3.4); criar linha, subdividir categoria ou reorganizar o catálogo não exige desenvolvedor nem publicação; a URL carrega o caminho, o que ajuda buscador e deixa o endereço legível; o menu não custa consulta; marca vira filtro sem concorrer com a hierarquia.
+  - Negativas / dívidas plantadas: **profundidade livre é liberdade para errar** — com menos de 100 produtos, o risco concreto não é o modelo, é a árvore virar labirinto de categorias com dois itens cada. O painel precisa mostrar a contagem de produtos por nó para que isso fique visível enquanto se edita. Movimentar ou renomear uma categoria **muda a URL e descarta o endereço antigo**, que pode já estar indexado ou compartilhado — o slug precisa ser editável de forma independente do nome, e mudança de caminho exige redirecionamento permanente do antigo. O cache em memória vira estado a invalidar: esquecer a invalidação numa tela do admin produz o defeito clássico de "salvei e o menu não mudou". Por fim, produto só pertence a uma categoria — um item que caberia em dois lugares obriga a escolher, e a alternativa (múltiplas categorias por produto) é mudança de modelo, não de tela.
+
 ---
 
 ## 6. Visão arquitetural
@@ -311,6 +360,7 @@ flowchart TB
 
     InfinitePay["InfinitePay<br/>Gateway de pagamento"]
     SMTP["Provedor de E-mail<br/>(SMTP transacional)"]
+    Telegram["Telegram<br/>Bot API"]
 
     Cliente -->|"navega, compra e<br/>acompanha pedidos"| Sistema
     Admin -->|"gerencia catálogo,<br/>pedidos e clientes"| Sistema
@@ -318,6 +368,9 @@ flowchart TB
     Cliente -->|"informa dados de cartão<br/>ou paga PIX diretamente"| InfinitePay
     Sistema -->|"envia código de acesso e<br/>avisos de pedido"| SMTP
     SMTP -.->|"entrega mensagem"| Cliente
+    Sistema -->|"alerta de venda paga"| Telegram
+    Telegram -.->|"notifica no celular"| Admin
+    SMTP -.->|"alerta redundante"| Admin
 
     style Sistema fill:#1168bd,color:#fff
 ```
@@ -327,6 +380,8 @@ O relacionamento que mais importa neste diagrama é a seta que **não** passa pe
 Repare também que a seta do sistema para o gateway diz "verifica se foi paga", e não "recebe a confirmação". A diferença não é de redação: como o webhook do InfinitePay não é assinado, **quem pergunta é o sistema**, e a resposta dessa pergunta é a única coisa que muda o estado de um pedido (ADR-003).
 
 A segunda leitura relevante é que o provedor de e-mail está no caminho de **entrada** da cliente, não apenas de notificação. Como o login não tem senha (ADR-004), esse serviço externo deixa de ser acessório e passa a ser pré-requisito de venda.
+
+As setas que chegam na **administradora** também merecem atenção: são duas, de serviços diferentes, carregando a mesma informação. Não é redundância acidental — o aviso de venda paga é a única notícia do sistema cujo extravio custa uma entrega atrasada, e dois canais gratuitos custam menos que um canal pago (ADR-009). Repare que nenhuma das duas setas transporta dado da cliente: a mensagem leva número, valor e um link para o painel.
 
 ### 6.2 Containers (C4 — Nível 2)
 
@@ -344,6 +399,7 @@ flowchart TB
 
     IP["InfinitePay<br/>Checkout hospedado + API"]
     SMTP["Provedor SMTP"]
+    TG["Telegram<br/>Bot API"]
 
     Cliente -->|"HTTPS"| App
     Admin -->|"HTTPS (/Admin)"| App
@@ -356,17 +412,21 @@ flowchart TB
     IP -.->|"webhook não assinado<br/>(apenas gatilho)"| App
     Cliente -->|"redirecionada para pagar"| IP
     App -->|"SMTP autenticado"| SMTP
+    App -->|"sendMessage (HTTPS)<br/>alerta de venda paga"| TG
+    TG -.->|"notificação"| Admin
 
     style App fill:#1168bd,color:#fff
 ```
 
 **Aplicação Web** — responsabilidade única de todo o comportamento do sistema: vitrine, checkout, painel e rotinas periódicas. Roda como um processo só (ADR-001, ADR-006). Always On é o que viabiliza as rotinas periódicas sem recurso adicional, e é também o que evita que a primeira visitante do dia pague o custo de inicialização.
 
-**Azure SQL Database** — fonte de verdade de tudo que não é imagem. Tier Basic pelas razões de ADR-002. Guarda também os **carrinhos**, inclusive os anônimos (ADR-008), e as **configurações operacionais** editáveis pela administradora (faixas de frete, curadoria da home, banners), que são dado e não código — é o que sustenta §3.4.
+**Azure SQL Database** — fonte de verdade de tudo que não é imagem. Tier Basic pelas razões de ADR-002. Guarda também os **carrinhos**, inclusive os anônimos (ADR-008), e as **configurações operacionais** editáveis pela administradora (faixas de frete, curadoria da home, banners, destino do alerta de venda), que são dado e não código — é o que sustenta §3.4.
 
 **Azure Blob Storage** — imagens servidas por URL pública diretamente ao navegador da cliente, sem passar pela aplicação. Tira tráfego de mídia da instância B1, que tem pouca folga, e prepara o terreno para um CDN na frente sem alterar o código.
 
 **Application Insights** — a única fonte de diagnóstico do projeto. Com uma pessoa mantendo o sistema, descobrir erro pela reclamação da cliente é inaceitável; o volume de telemetria previsto está confortavelmente dentro da franquia gratuita do serviço.
+
+**Telegram Bot API** — dependência externa apenas de **saída**, e apenas para alertar a administradora (ADR-009). O sistema não recebe nada do Telegram: não há webhook de bot, não há comando a interpretar, não há segunda porta de entrada para proteger. É a dependência mais barata de sustentar do projeto, e também a mais descartável — se o Telegram estiver fora do ar, o pedido é gravado normalmente e o alerta cai no e-mail e na fila de repetição.
 
 O **webhook do InfinitePay** é a única entrada não iniciada por um usuário, e está desenhado com seta tracejada de propósito: ele não é assinado e, portanto, não carrega autoridade. Exige endpoint público, URL com segmento secreto, tratamento idempotente e — o ponto central — **confirmação por consulta de volta ao gateway** antes de qualquer mudança de estado (ADR-003).
 
@@ -411,6 +471,7 @@ sequenceDiagram
         alt Verificado e ainda não processado
             App->>DB: Marca como Pago (idempotente por order_nsu)
             App->>App: Agenda e-mail de confirmação
+            App->>App: Agenda alerta de venda para a<br/>administradora (Telegram + e-mail),<br/>uma vez por pedido
         else Já processado ou divergente
             App->>App: Descarta sem efeito e registra em log
         end
@@ -431,6 +492,8 @@ O ponto central deste diagrama é a linha `App->>App: Ignora o conteúdo da noti
 O segundo ponto não-óbvio é o bloco `par`: **os dois caminhos acontecem em paralelo e em ordem imprevisível**. A cliente pode voltar ao site antes de o webhook chegar — e a tela precisa mostrar "estamos confirmando seu pagamento" em vez de inventar um sucesso. O inverso também ocorre: o webhook chega e a cliente nunca volta. A tela de confirmação apenas **lê** um estado que já foi verificado; ela nunca verifica por conta própria.
 
 O terceiro ponto está na nota final: **a conciliação periódica executa exatamente o mesmo `payment_check`**. Como a verificação foi isolada num único caminho, webhook e conciliação não são dois fluxos com regras diferentes — são dois gatilhos para o mesmo procedimento. Isso é o que impede que o caminho menos exercitado (a conciliação) acumule defeito silencioso por falta de uso.
+
+Note onde o alerta da administradora entra: **dentro do bloco que já verificou o pagamento, e só no ramo em que o pedido ainda não havia sido processado**. É essa posição que dá a idempotência de graça — o mesmo `alt` que impede marcar o pedido como pago duas vezes impede o alerta duplicado, sem nenhuma regra própria. `Agenda` é literal: a chamada ao Telegram acontece fora da requisição do webhook (ADR-006, ADR-009), então o `200 OK` devolvido ao gateway não espera por serviço de mensageria nenhum.
 
 O segundo ponto é que **tudo o que acontece antes desta linha do tempo não toca no estoque**. A cliente navega e monta o carrinho livremente (ADR-008); a unidade só é retida quando ela conclui o checkout — **antes** de ser enviada ao gateway (ADR-007). Debitar aqui garante que a unidade não seja vendida de novo enquanto ela digita o cartão, e é o que torna obrigatória a rotina que expira pedidos não pagos e devolve o estoque.
 
@@ -546,8 +609,12 @@ Há duas saídas do carrinho porque **pagamento na entrega não passa pelo gatew
 ## 9. Dívidas técnicas conscientes
 
 - **Sem busca no catálogo**
-  - **Quando vira problema**: quando o catálogo passar de cerca de 150 produtos, ou quando a análise de navegação mostrar clientes desistindo em páginas de categoria longas.
+  - **Quando vira problema**: quando o catálogo passar de cerca de 150 produtos, ou quando a análise de navegação mostrar clientes desistindo em páginas de categoria longas. Também antes disso, se a árvore de categorias crescer a ponto de a cliente precisar adivinhar em qual galho o produto está (ADR-010).
   - **Como pagar**: busca por `LIKE` com índice no banco resolve nesta ordem de grandeza. Serviço de busca dedicado é desproporcional e só entraria em outro patamar de catálogo.
+
+- **Árvore de categorias sem limite prático de forma**
+  - **Quando vira problema**: quando a navegação acumular categorias de um ou dois produtos, ou galhos fundos demais para a cliente percorrer. O modelo aceita profundidade livre (ADR-010); nada além do bom senso de quem cadastra impede que ela vire labirinto.
+  - **Como pagar**: exibir a contagem de produtos por nó no painel, para que o efeito seja visível no momento da edição; revisar a estrutura com dados reais de navegação depois dos primeiros meses. Achatar a árvore depois é reorganização de dado, mas **descarta URLs já indexadas** — daí a exigência de redirecionamento permanente ao mover ou renomear categoria.
 
 - **Sem ambiente de homologação e sem slot de staging**
   - **Quando vira problema**: na primeira publicação que quebrar produção em horário de venda, ou assim que outra pessoa passar a publicar.
@@ -581,6 +648,10 @@ Há duas saídas do carrinho porque **pagamento na entrega não passa pelo gatew
   - **Quando vira problema**: quando o tempo de carregamento da vitrine em conexão móvel começar a afastar visitante.
   - **Como pagar**: colocar um CDN à frente do Blob. Como as imagens já são servidas por URL própria, a mudança não toca o código da loja.
 
+- **Alerta de venda em canal que não é o que a administradora usa**
+  - **Quando vira problema**: se ela não adotar o Telegram na prática. O alerta passa a existir só no e-mail, que é o canal que ela menos olha com urgência — e o requisito de §4 deixa de ser atendido de fato, sem nenhum erro aparecer em log.
+  - **Como pagar**: migrar para a Cloud API oficial do WhatsApp (ADR-009), o que exige um número dedicado e um template `utility` aprovado. Como o envio já estará atrás de um ponto único de disparo, a troca é uma implementação nova do mesmo alerta. Antes disso, medir o simples: ela lê e reage às mensagens do bot nas primeiras semanas?
+
 - **Sem política automatizada de retenção e exclusão de dados pessoais (LGPD)**
   - **Quando vira problema**: ao primeiro pedido de exclusão de conta feito por uma cliente, ou em qualquer questionamento formal sobre tratamento de dados.
   - **Como pagar**: implementar exclusão e anonimização de cliente preservando o histórico de pedido, que precisa sobreviver por obrigação contábil. Exige decidir antes o que é anonimizável e o que não é.
@@ -600,6 +671,9 @@ Há duas saídas do carrinho porque **pagamento na entrega não passa pelo gatew
 | **Vazamento de dados pessoais** (celular, endereço residencial) por falha de autorização no painel | Alto | Baixa | Política de autorização aplicada à `Area` inteira, não controller a controller; HTTPS obrigatório; segredos fora do repositório; revisão específica de autorização antes do lançamento |
 | **Estoque preso por pedidos não pagos** deixando produtos invisíveis na vitrine | Médio | Média | Carrinho não retém estoque (ADR-008), o que limita o problema a quem concluiu o checkout e não pagou; rotina de expiração é requisito de correção, não conveniência (ADR-007); prazo configurável; painel mostra pedidos aguardando pagamento para liberação manual |
 | **Total do pedido diferente do que a cliente viu no carrinho**, porque o preço mudou no painel entre adicionar e finalizar | Baixo | Média | Preço não é congelado no carrinho por decisão (ADR-008); o checkout revalida e a tela deve **informar a alteração explicitamente** antes da confirmação, nunca ajustar o total em silêncio |
+| **Alerta de venda paga não chega** — bot removido, token revogado, chat apagado ou Telegram indisponível — e o pedido pago fica sem ninguém para separar | Médio | Média | Canal duplo e independente: Telegram e e-mail (ADR-009); repetição com espera progressiva; **painel exibe os pedidos pagos cujo alerta não saiu**, para que a falha seja visível sem depender de ler log; o pedido em si nunca é afetado pela falha de envio |
+| **Token do bot do Telegram exposto** — quem tem o token controla o bot e pode enviar mensagens em nome dele | Baixo | Baixa | Token em configuração de aplicação do App Service, fora do repositório; o bot só envia para um destino configurado e não recebe comandos; rotação do token é imediata pelo próprio Telegram. Impacto limitado a mensagem indevida — o bot não tem acesso a nada do sistema |
+| **Reorganização do catálogo quebra URLs já indexadas** — mover ou renomear uma categoria muda o caminho inteiro dos descendentes, e a loja depende de busca orgânica para ser encontrada | Médio | Média | Slug editável de forma independente do nome, para que corrigir texto não mexa no endereço; redirecionamento permanente do caminho antigo ao mover ou renomear; painel avisa a consequência antes de confirmar (ADR-010) |
 | **Uma única pessoa detém todo o conhecimento do sistema** | Médio | Alta | Manter esta proposta e os artefatos do pipeline atualizados; privilegiar convenções padrão da plataforma sobre soluções criativas; gerar o arquivo de contexto para o agente de IA |
 
 ---
@@ -609,10 +683,10 @@ Há duas saídas do carrinho porque **pagamento na entrega não passa pelo gatew
 Sequência lógica de validação, da maior incerteza para a menor. Não é cronograma.
 
 1. **Prova de conceito da integração com o InfinitePay**, em produção e com valores baixos, já que não há sandbox: criar cobrança via `POST /links`, redirecionar, receber o webhook, confirmar por `payment_check`, simular reentrega e forçar um POST forjado no endpoint para provar que ele **não** marca o pedido como pago. Testar obrigatoriamente **cartão parcelado**, que é onde `amount` e `paid_amount` divergem. É o maior risco técnico do projeto e o único capaz de invalidar o ADR-003 — precisa vir antes de qualquer tela.
-2. **Decidir o provedor SMTP e verificar o domínio** (SPF, DKIM, DMARC), enviando e recebendo um e-mail de teste em Gmail e Outlook. Como o login depende disso (ADR-004), entregabilidade ruim invalida o desenho de autenticação antes de ele existir.
+2. **Decidir o provedor SMTP e verificar o domínio** (SPF, DKIM, DMARC), enviando e recebendo um e-mail de teste em Gmail e Outlook. Como o login depende disso (ADR-004), entregabilidade ruim invalida o desenho de autenticação antes de ele existir. No mesmo passo, **criar o bot do Telegram e confirmar com a administradora que ela recebe e enxerga a mensagem no celular dela** (ADR-009) — é barato de fazer agora e é o que revela cedo se o canal escolhido funciona na prática para ela.
 3. **Confirmar os preços vigentes** de App Service B1, Azure SQL Basic e Blob Storage na região escolhida, contra o teto declarado (§4). Se não couber, a decisão de tier volta à mesa antes de qualquer provisionamento.
 4. **Provisionar os três recursos e publicar um "olá mundo"** com domínio próprio e HTTPS, mais o pipeline de publicação. Vale mais descobrir um problema de configuração na semana um do que na véspera do lançamento.
-5. **Modelar o domínio e as migrations iniciais**: produto, categoria, cliente, carrinho, pedido, faixa de frete, conteúdo da home.
+5. **Modelar o domínio e as migrations iniciais**: produto, categoria (auto-relacionada, ADR-010), marca, cliente, carrinho, pedido, faixa de frete, conteúdo da home. Vale cadastrar a árvore real de `Flora` e `Bambini` já nessa etapa — é o que revela cedo se a profundidade escolhida corresponde ao catálogo de verdade, enquanto mudar ainda é barato.
 6. **Seguir para o PRD**, detalhando regras de negócio e critérios de aceite por tela, referenciando os ADRs desta proposta.
 
 ---

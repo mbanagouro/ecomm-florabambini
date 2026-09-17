@@ -14,7 +14,7 @@ A ideia é que o repositório sirva de referência real: um sistema de verdade, 
 
 | Fase | Artefato | Status |
 |---|---|---|
-| 1. Architect | [`docs/architecture/proposta-arquitetural.md`](docs/architecture/proposta-arquitetural.md) | Concluída — ADR-001 a ADR-008 |
+| 1. Architect | [`docs/architecture/proposta-arquitetural.md`](docs/architecture/proposta-arquitetural.md) | Concluída — ADR-001 a ADR-010 |
 | 2. PRD | `docs/prds/` | Pendente |
 | 3. Prototype | `docs/prototype/` | Pendente |
 | 4. Planner | `docs/plans/` | Pendente |
