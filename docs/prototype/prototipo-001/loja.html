@@ -1,0 +1,401 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Loja — Flora Bambini (protótipo PRD-001)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Manrope:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<!-- Sistema visual herdado do design de referência; nada é redefinido aqui. -->
+<link rel="stylesheet" href="../../design/styles.css" />
+<link rel="stylesheet" href="proto.css" />
+<style>
+/* Só o que o design de referência não tinha. Usa os tokens de styles.css. */
+a { cursor: pointer; }
+.mono { font-family: var(--mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+:focus-visible { outline: 2px solid var(--sage-deep); outline-offset: 2px; }
+
+/* Menu de categorias (UI-01) */
+.hdr-row { height: 88px; }
+.menu { display: flex; gap: 4px; }
+.menu > li { list-style: none; position: static; }
+.menu > li > a { display: block; padding: 10px 14px; font-size: 13.5px; color: var(--ink-soft); border-radius: 999px; }
+.menu > li > a:hover, .menu > li.open > a { color: var(--sage-deep); background: rgba(255,255,255,.6); }
+.mega { position: absolute; left: 0; right: 0; top: 100%; background: var(--bg-paper); border-bottom: 1px solid var(--line); box-shadow: var(--shadow-soft); padding: 36px 0 44px; }
+.menu > li:not(.open) > .mega { display: none; }
+.menu > li:hover > .mega, .menu > li:focus-within > .mega { display: block; }
+.mega-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 32px; }
+.mega h3 a { font-family: var(--display); font-size: 24px; }
+.mega h3 a:hover, .mega li a:hover { color: var(--sage-deep); }
+.mega ul { list-style: none; padding: 0; margin: 12px 0 0; display: flex; flex-direction: column; gap: 8px; font-size: 14px; color: var(--ink-soft); }
+.mega .all { margin-top: 28px; display: inline-block; }
+.burger { display: none; }
+.mdrawer { position: fixed; inset: 0 auto 0 0; width: 340px; max-width: 88vw; z-index: 100; background: var(--bg-paper); box-shadow: 20px 0 60px rgba(0,0,0,.12); padding: 20px 24px; overflow-y: auto; }
+.mdrawer-mask { position: fixed; inset: 0; z-index: 90; background: rgba(44,51,38,.4); }
+.mdrawer h2 { font-family: var(--display); font-size: 26px; margin: 20px 0 6px; }
+.mdrawer ul { list-style: none; margin: 0; padding: 0 0 0 14px; border-left: 1px solid var(--line); }
+.mdrawer li a { display: block; padding: 9px 0; font-size: 15px; color: var(--ink-soft); }
+.mdrawer li li a { font-size: 14px; }
+
+/* Listagem (UI-02) */
+.crumb { padding-top: 28px; padding-bottom: 12px; color: var(--ink-muted); }
+.crumb a:hover { color: var(--sage-deep); }
+.crumb .sep { margin: 0 10px; }
+.crumb [aria-current] { color: var(--ink-soft); }
+.cat-h { padding: 24px 0 40px; }
+.cat-h h1 { font-size: clamp(48px, 7vw, 88px); }
+.subcats { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 24px; }
+.subcats a { padding: 10px 18px; border: 1px solid var(--ink); border-radius: 999px; font-size: 13px; font-weight: 500; }
+.subcats a:hover { background: var(--ink); color: var(--bg-paper); }
+.toolbar { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 20px 0; }
+.toolbar form { display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap; }
+.brands { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; border: 0; margin: 0; padding: 0; }
+.brands legend { float: left; margin-right: 6px; color: var(--ink-muted); padding: 0; }
+.brands label { cursor: pointer; }
+.brands input { position: absolute; opacity: 0; }
+.brands span { display: inline-block; padding: 8px 16px; border: 1px solid var(--line); border-radius: 999px; background: rgba(255,255,255,.6); color: var(--ink-soft); }
+.brands input:checked + span { background: var(--sage-deep); border-color: var(--sage-deep); color: var(--bg-paper); }
+.brands input:focus-visible + span { outline: 2px solid var(--sage-deep); outline-offset: 2px; }
+.sort { display: flex; align-items: center; gap: 10px; color: var(--ink-muted); }
+.sort select { height: 38px; padding: 0 14px; border: 1px solid var(--line); border-radius: 999px; background: var(--bg-paper); color: var(--ink); font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; }
+.grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 28px; row-gap: 56px; }
+.ph { aspect-ratio: 1/1; }                       /* RN-36: imagens quadradas */
+.pcard a { display: block; }
+.pcard .pprice { text-align: right; }
+.pcard .pprice s, .price s { display: block; font-family: var(--body); font-size: 12px; color: var(--ink-muted); }
+.pcard .pprice.promo b, .price.promo b { font-weight: 400; color: var(--sage-deep); }
+.pcard.out .ph { opacity: .55; }
+.tag-out { position: absolute; top: 12px; left: 12px; z-index: 2; padding: 6px 12px; border-radius: 999px; background: var(--ink); color: var(--bg-paper); }
+.skel .ph { background: var(--line-soft); animation: pulse 1.2s ease-in-out infinite; }
+.skel .ph::before, .skel .ph::after { display: none; }
+.skel .bar { height: 12px; border-radius: 6px; background: var(--line-soft); margin-top: 14px; width: 70%; }
+@keyframes pulse { 50% { opacity: .5; } }
+.more { text-align: center; padding-top: 56px; color: var(--ink-muted); }
+.more p { margin: 0 0 16px; }
+.empty-cat { text-align: center; padding: 96px 0 120px; }
+.empty-cat p { color: var(--ink-soft); margin: 12px 0 28px; }
+
+/* Produto (UI-03) */
+.pdp { display: grid; grid-template-columns: 76px 1.1fr .9fr; gap: 28px; align-items: start; padding: 20px 0 72px; }
+.pdp.single { grid-template-columns: 1.1fr .9fr; }
+.thumbs { display: flex; flex-direction: column; gap: 10px; }
+.thumbs button { width: 76px; height: 76px; padding: 0; border-radius: 10px; border: 1px solid var(--line); overflow: hidden; background: none; }
+.thumbs button[aria-current="true"] { border: 1.5px solid var(--sage-deep); }
+.thumbs .ph { border-radius: 0; padding: 0; height: 100%; }
+.thumbs .ph::before { display: none; }
+.main-img { position: relative; display: block; width: 100%; padding: 0; border: 0; background: none; text-align: left; cursor: zoom-in; }
+.main-img .zoom { position: absolute; right: 14px; bottom: 14px; z-index: 2; padding: 6px 12px; border-radius: 999px; background: var(--bg-paper); color: var(--ink-soft); }
+.info { padding-left: 12px; }
+.info h1 { font-size: 46px; margin-top: 14px; line-height: 1.1; }
+.price { display: flex; align-items: baseline; gap: 14px; margin-top: 24px; font-family: var(--display); font-size: 38px; }
+.price s { font-size: 16px; }
+.avail { display: flex; align-items: center; gap: 10px; margin-top: 20px; font-size: 14px; color: var(--ink-soft); }
+.avail i { width: 8px; height: 8px; border-radius: 50%; background: var(--sage-deep); }
+.avail.out i { background: var(--ink-muted); }
+.buy { margin-top: 24px; }
+.buy .btn { width: 100%; justify-content: center; }
+.out-box { margin-top: 24px; padding: 18px 20px; border-radius: var(--r-lg); background: var(--bg-warm); color: var(--ink-soft); font-size: 14px; }
+.desc { background: var(--bg-paper); border-top: 1px solid var(--line-soft); padding: 64px 0 80px; }
+.desc .body { max-width: 680px; margin-top: 20px; font-size: 15px; line-height: 1.7; color: var(--ink-soft); }
+.lightbox { position: fixed; inset: 0; z-index: 110; background: rgba(44,51,38,.82); display: grid; place-items: center; padding: 24px; }
+.lightbox .ph { width: min(86vh, 92vw); }
+.lightbox a { position: absolute; top: 20px; right: 24px; color: var(--bg-paper); }
+
+/* Não encontrado (UI-04) e rodapé */
+.nf { text-align: center; padding: 120px 0 140px; }
+.nf h1 { font-size: clamp(48px, 7vw, 80px); margin-top: 16px; }
+.nf p { color: var(--ink-soft); margin: 16px 0 32px; }
+.nf .links { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.foot-min { background: var(--sage-darker); color: rgba(250,247,239,.7); padding: 40px 0; font-size: 12px; }
+.foot-min .wrap { display: flex; justify-content: space-between; align-items: center; gap: 24px; flex-wrap: wrap; }
+.foot-min .logo-mark .lm-name, .foot-min .logo-mark .lm-icon { color: var(--bg-paper); }
+
+@media (max-width: 1000px) { .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } .mega-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 760px) {
+  .wrap { padding: 0 16px; }
+  .announce { flex-wrap: wrap; gap: 4px 20px; padding: 8px 12px; font-size: 10px; }
+  .hdr-row { height: 68px; }
+  .menu { display: none; }
+  .burger { display: grid; }
+  .logo-mark .lm-icon { display: none; }
+  .logo-mark .lm-name { font-size: 17px; }
+  .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; row-gap: 36px; }
+  .ph { padding: 12px; }
+  .pcard .pmeta { flex-direction: column; gap: 4px; }
+  .pcard .pprice { text-align: left; }
+  .ph-meta .ph-name { font-size: 16px; }
+  .pdp, .pdp.single { grid-template-columns: 1fr; }
+  .thumbs { flex-direction: row; order: 2; overflow-x: auto; }
+  .info { padding-left: 0; order: 3; }
+  .info h1 { font-size: 34px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═════════ UI-01 — Cabeçalho e menu de categorias (presente em todas as telas) ═════════ -->
+<header class="hdr">
+  <!-- Faixa de avisos mantida do design. Os textos são de exemplo: o conteúdo real vem do módulo de Conteúdo. -->
+  <div class="announce">
+    <span>Frete grátis acima de R$ 240</span>
+    <span>Devolução de embalagens · 30% de volta</span>
+    <span>Envio em 24h</span>
+  </div>
+  <div class="wrap hdr-row" style="position:static">
+    <div>
+      <a class="hdr-tool-btn burger" href="#UI-01.mobile" aria-label="Abrir menu de categorias">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M4 7h16M4 12h16M4 17h16" stroke-linecap="round"/></svg>
+      </a>
+      <nav aria-label="Categorias"><ul class="menu" id="menu" style="margin:0;padding:0"></ul></nav>
+    </div>
+    <a href="#UI-02" aria-label="Flora Bambini — início">
+      <div class="logo-mark">
+        <svg class="lm-icon" width="40" height="38" viewBox="0 0 36 34" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M18 10c-2-2-5-2-6 0-1 2 1 4 3 4M18 10c2-2 5-2 6 0 1 2-1 4-3 4M18 10v4M15 14c0 2 1.4 3 3 3s3-1 3-3" stroke-linecap="round" stroke-linejoin="round"/><path d="M18 17v12M14 22c2 1 4 1 4 0M22 26c-2 1-4 1-4 0" stroke-linecap="round"/></svg>
+        <div class="lm-name">FLORA BAMBINI</div>
+      </div>
+    </a>
+    <div class="hdr-tools">
+      <!-- Conta e carrinho pertencem a outros PRDs; ficam no cabeçalho só para reservar o lugar. -->
+      <button class="hdr-tool-btn" aria-label="Conta"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="12" cy="9" r="3.5"/><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5" stroke-linecap="round"/></svg></button>
+      <button class="hdr-tool-btn" aria-label="Carrinho"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 6h2l2.5 11.5a1.5 1.5 0 0 0 1.5 1.2h8a1.5 1.5 0 0 0 1.5-1.2L21 9H6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="10" cy="20.5" r="1"/><circle cx="17" cy="20.5" r="1"/></svg></button>
+    </div>
+  </div>
+</header>
+
+<div data-ui="UI-01" data-when="mobile">
+  <a class="mdrawer-mask" href="#UI-01" aria-label="Fechar menu"></a>
+  <nav class="mdrawer" aria-label="Categorias" id="mdrawer"></nav>
+</div>
+
+<!-- ═════════ UI-02 — Listagem de categoria (também é o fundo de UI-01) ═════════ -->
+<main data-ui="UI-01 UI-02">
+  <div class="wrap">
+    <nav class="crumb mono" aria-label="Você está em" id="crumb"></nav>
+    <div class="cat-h">
+      <div class="eyebrow" id="cat-count"></div>
+      <h1 class="display" id="cat-name" style="margin-top:14px"></h1>
+      <div class="subcats" id="subcats"></div>
+    </div>
+  </div>
+
+  <section class="toolbar" data-unless="vazio">
+    <div class="wrap">
+      <form method="get" action="#UI-02.filtrado">
+        <fieldset class="brands mono">
+          <legend>Marca</legend>
+          <label><input type="checkbox" name="marca" value="aurora" /><span>Aurora</span></label>
+          <label><input type="checkbox" name="marca" value="raiz" id="b-raiz" /><span>Raiz</span></label>
+          <label><input type="checkbox" name="marca" value="verde-vida" /><span>Verde Vida</span></label>
+        </fieldset>
+        <div class="sort mono">
+          <label for="ordem">Ordenar</label>
+          <select id="ordem" name="ordem">
+            <option value="mais-vendidos">Mais vendidos</option>
+            <option value="novos">Novos</option>
+            <option value="menor-preco">Menor preço</option>
+          </select>
+          <button class="btn btn-outline" data-when="semJs" style="height:38px">Aplicar</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:56px" data-unless="vazio">
+    <div class="wrap">
+      <div class="grid" id="grid"></div>
+
+      <div class="more" data-unless="carregandoMais fim erroLote semJs filtrado">
+        <!-- O link existe sempre no conteúdo (RN-37); com JavaScript, a rolagem carrega o lote antes do clique. -->
+        <a class="btn btn-ghost" href="#UI-02.carregandoMais" rel="next">Próxima página →</a>
+      </div>
+      <div class="more" data-when="carregandoMais" role="status"><p class="mono">Carregando mais produtos…</p></div>
+      <div class="more" data-when="erroLote" role="alert">
+        <p>Não foi possível carregar mais produtos.</p>
+        <a class="btn btn-outline" href="#UI-02.carregandoMais">Tentar de novo</a>
+        <a class="btn btn-ghost" href="#UI-02.semJs" rel="next">Próxima página →</a>
+      </div>
+      <div class="more" data-when="semJs">
+        <a class="btn btn-outline" href="#UI-02.semJs" rel="next">Próxima página →</a>
+      </div>
+      <div class="more" data-when="fim filtrado"><p class="mono" id="end-msg"></p></div>
+    </div>
+  </section>
+
+  <section class="wrap empty-cat" data-when="vazio">
+    <h2 class="display" style="font-size:34px">Ainda não há produtos nesta categoria.</h2>
+    <p>Enquanto isso, veja o restante da linha.</p>
+    <a class="btn btn-outline" href="#UI-02">Ver Flora</a>
+  </section>
+</main>
+
+<!-- ═════════ UI-03 — Página de produto ═════════ -->
+<main data-ui="UI-03">
+  <div class="wrap">
+    <nav class="crumb mono" aria-label="Você está em">
+      <a href="#UI-02">Início</a><span class="sep">/</span><a href="#UI-02">Flora</a><span class="sep">/</span><a href="#UI-02">Cabelo</a><span class="sep">/</span><a href="#UI-02" aria-current="page">Shampoo</a>
+    </nav>
+
+    <div class="pdp" id="pdp">
+      <div class="thumbs" data-unless="imagemUnica" aria-label="Imagens do produto">
+        <button aria-current="true" aria-label="Imagem 1"><div class="ph tone-sage"></div></button>
+        <button aria-label="Imagem 2"><div class="ph tone-mist"></div></button>
+        <button aria-label="Imagem 3"><div class="ph tone-cream"></div></button>
+        <button aria-label="Imagem 4"><div class="ph tone-stone"></div></button>
+      </div>
+      <a class="main-img" href="#UI-03.ampliacao" aria-label="Ampliar imagem">
+        <div class="ph tone-sage"><div class="ph-meta"><div class="ph-kind">imagem média · 500 × 500</div><div class="ph-name">Shampoo de Camomila</div></div></div>
+        <span class="zoom mono">Ampliar</span>
+      </a>
+      <div class="info">
+        <div class="eyebrow">Verde Vida</div>
+        <h1 class="display">Shampoo de Camomila</h1>
+
+        <div class="price" data-unless="promocao"><span>R$ 42,90</span></div>
+        <div class="price promo" data-when="promocao"><b>R$ 39,90</b><s>R$ 50,00</s></div>
+
+        <div class="avail" data-unless="esgotado"><i></i> Disponível</div>
+        <div class="avail out" data-when="esgotado"><i></i> Esgotado</div>
+
+        <!-- A ação de compra é do PRD de carrinho; aqui só se define quando ela aparece (RN-33). -->
+        <div class="buy" data-unless="esgotado"><button class="btn btn-primary btn-lg">Adicionar à cesta</button></div>
+        <div class="out-box" data-when="esgotado">Este produto está esgotado no momento.</div>
+      </div>
+    </div>
+  </div>
+
+  <section class="desc">
+    <div class="wrap">
+      <div class="eyebrow">Descrição</div>
+      <div class="body">
+        <p>Limpa sem ressecar, com espuma cremosa. <b>Não arde nos olhos.</b></p>
+        <ul><li>Camomila orgânica</li><li>Aloe vera</li></ul>
+      </div>
+    </div>
+  </section>
+
+  <div class="lightbox" data-when="ampliacao" role="dialog" aria-modal="true" aria-label="Imagem ampliada">
+    <a class="mono" href="#UI-03">Fechar ×</a>
+    <div class="ph tone-sage"><div class="ph-meta"><div class="ph-kind">imagem grande · 1000 × 1000</div><div class="ph-name">Shampoo de Camomila</div></div></div>
+  </div>
+</main>
+
+<!-- ═════════ UI-04 — Página não encontrada ═════════ -->
+<main data-ui="UI-04">
+  <div class="wrap nf">
+    <div class="eyebrow">Erro 404</div>
+    <h1 class="display">Página <em>não encontrada</em>.</h1>
+    <p>O endereço pode ter mudado ou o produto saiu da loja. Continue por uma das linhas.</p>
+    <div class="links" id="nf-links"></div>
+  </div>
+</main>
+
+<footer class="foot-min">
+  <div class="wrap">
+    <div class="logo-mark"><div class="lm-name" style="font-size:16px">FLORA BAMBINI</div></div>
+    <div>© 2026 Flora Bambini</div>
+  </div>
+</footer>
+
+<script src="proto.js"></script>
+<script>
+// ── Dados de exemplo ──
+// "Casa" e "Condicionador" não têm produto ativo: ficam fora do menu e dos links de subcategoria (RN-24, RN-27).
+var MENU = [
+  { n: "Flora", kids: [{ n: "Cabelo", kids: ["Shampoo"] }, { n: "Corpo", kids: [] }] },
+  { n: "Bambini", kids: [{ n: "Banho", kids: [] }, { n: "Cabelo", kids: [] }] }
+];
+var TONES = ["sage", "mist", "cream", "bambini", "stone", "donna", "clay"];
+var BRANDS = ["Verde Vida", "Raiz", "Aurora"];
+var ALL = [];
+["Shampoo", "Condicionador", "Sabonete", "Óleo", "Loção", "Creme"].forEach(function (kind, i) {
+  ["Camomila", "Alecrim", "Lavanda", "Calêndula", "Babosa"].forEach(function (plant, j) {
+    var k = i * 5 + j, price = 24 + ((k * 7) % 11) * 4 + 0.9;
+    ALL.push({
+      n: kind + " de " + plant, m: BRANDS[k % 3], tone: TONES[k % 7], price: price,
+      promo: k % 6 === 1 ? Math.round(price * 0.8) + 0.9 - 1 : null,
+      out: k >= 28
+    });
+  });
+});
+function brl(v) { return "R$ " + v.toFixed(2).replace(".", ","); }
+function now(p) { return p.promo || p.price; }
+
+function card(p) {
+  var price = p.promo
+    ? '<div class="pprice promo"><b>' + brl(p.promo) + "</b><s>" + brl(p.price) + "</s></div>"
+    : '<div class="pprice">' + brl(p.price) + "</div>";
+  return '<article class="pcard' + (p.out ? " out" : "") + '"><a href="#UI-03' + (p.out ? ".esgotado" : p.promo ? ".promocao" : "") + '">' +
+    (p.out ? '<span class="tag-out mono">Esgotado</span>' : "") +
+    '<div class="ph tone-' + p.tone + '"><div class="ph-meta"><div class="ph-name">' + p.n + "</div></div></div>" +
+    '<div class="pmeta"><div><span class="pcat">' + p.m + '</span><div class="ptitle">' + p.n + "</div></div>" + price + "</div></a></article>";
+}
+function skeleton() { return '<div class="pcard skel" aria-hidden="true"><div class="ph"></div><div class="bar"></div></div>'; }
+
+// ── Menu (UI-01) ──
+document.getElementById("menu").innerHTML = MENU.map(function (root) {
+  return '<li data-root="' + root.n + '"><a href="#UI-02" aria-haspopup="true">' + root.n + "</a>" +
+    '<div class="mega"><div class="wrap"><div class="mega-grid">' +
+    root.kids.map(function (k) {
+      return '<div><h3><a href="#UI-02">' + k.n + "</a></h3><ul>" +
+        k.kids.map(function (g) { return '<li><a href="#UI-02">' + g + "</a></li>"; }).join("") + "</ul></div>";
+    }).join("") +
+    '</div><a class="mono all" href="#UI-02">Ver tudo de ' + root.n + " →</a></div></div></li>";
+}).join("");
+document.getElementById("mdrawer").innerHTML =
+  '<a class="mono" href="#UI-01">Fechar ×</a>' +
+  MENU.map(function (root) {
+    return '<h2><a href="#UI-02">' + root.n + "</a></h2><ul>" +
+      root.kids.map(function (k) {
+        return '<li><a href="#UI-02">' + k.n + "</a>" +
+          (k.kids.length ? "<ul>" + k.kids.map(function (g) { return '<li><a href="#UI-02">' + g + "</a></li>"; }).join("") + "</ul>" : "") + "</li>";
+      }).join("") + "</ul>";
+  }).join("");
+document.getElementById("nf-links").innerHTML = MENU.map(function (r) {
+  return '<a class="btn btn-outline" href="#UI-02">Ver ' + r.n + "</a>";
+}).join("");
+
+// ── Estados ──
+function render(screen, state) {
+  document.querySelectorAll("#menu > li").forEach(function (li) {
+    li.classList.toggle("open", screen === "UI-01" && state === "aberto" && li.dataset.root === "Flora");
+  });
+  document.getElementById("pdp").classList.toggle("single", state === "imagemUnica");
+  if (screen !== "UI-01" && screen !== "UI-02") return;
+
+  var empty = state === "vazio", filtered = state === "filtrado";
+  var crumb = empty ? ["Início", "Flora", "Casa"] : ["Início", "Flora"];
+  document.getElementById("crumb").innerHTML = crumb.map(function (c, i) {
+    return '<a href="#UI-02"' + (i === crumb.length - 1 ? ' aria-current="page"' : "") + ">" + c + "</a>";
+  }).join('<span class="sep">/</span>');
+  document.getElementById("cat-name").textContent = empty ? "Casa" : "Flora";
+  document.getElementById("subcats").innerHTML = empty ? "" :
+    '<a href="#UI-02">Cabelo</a><a href="#UI-02">Corpo</a>';
+
+  var list = ALL.slice(), shown;
+  document.getElementById("b-raiz").checked = filtered;
+  document.getElementById("ordem").value = filtered ? "menor-preco" : "mais-vendidos";
+  if (filtered) {
+    // disponíveis antes dos esgotados; dentro de cada grupo, menor preço vigente primeiro (RN-28, RN-29)
+    list = list.filter(function (p) { return p.m === "Raiz"; })
+      .sort(function (a, b) { return (a.out - b.out) || (now(a) - now(b)); });
+    shown = list;
+  } else {
+    shown = state === "fim" ? list : list.slice(0, 12);
+  }
+  document.getElementById("cat-count").textContent = empty ? "Categoria" : list.length + " produtos";
+  document.getElementById("grid").innerHTML = shown.map(card).join("") +
+    (state === "carregandoMais" ? skeleton() + skeleton() + skeleton() + skeleton() : "");
+  document.getElementById("end-msg").textContent = "Você viu os " + list.length + " produtos";
+}
+
+Proto.init({
+  "UI-01": { name: "Cabeçalho e menu de categorias", states: [["default", "Padrão"], ["aberto", "Menu aberto"], ["mobile", "Menu no celular"]] },
+  "UI-02": { name: "Listagem de categoria", states: [["default", "Padrão"], ["filtrado", "Filtro de marca e ordenação"], ["carregandoMais", "Carregando mais"], ["fim", "Fim da listagem"], ["erroLote", "Erro ao carregar lote"], ["semJs", "Sem JavaScript"], ["vazio", "Vazio"]] },
+  "UI-03": { name: "Página de produto", states: [["default", "Padrão"], ["promocao", "Preço promocional"], ["esgotado", "Esgotado"], ["ampliacao", "Imagem ampliada"], ["imagemUnica", "Uma só imagem"]] },
+  "UI-04": { name: "Página não encontrada", states: [["default", "Padrão"]] }
+}, "UI-02", render);
+</script>
+</body>
+</html>

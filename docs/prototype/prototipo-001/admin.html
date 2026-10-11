@@ -1,0 +1,804 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Painel — Flora Bambini (protótipo PRD-001)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="proto.css" />
+<style>
+:root {
+  --bg: #f1f1f1;
+  --surface: #ffffff;
+  --surface-subdued: #f7f7f7;
+  --nav: #ebebeb;
+  --topbar: #1a1a1a;
+  --border: #e3e3e3;
+  --border-input: #8a8a8a;
+  --text: #303030;
+  --text-subdued: #616161;
+  --primary: #303030;
+  --primary-hover: #1a1a1a;
+  --focus: #005bd3;
+  --critical: #8e1f0b;
+  --critical-bg: #fee9e8;
+  --critical-border: #e51c00;
+  --warning: #5e4200;
+  --warning-bg: #fff1e3;
+  --success: #0c5132;
+  --success-bg: #cdfee1;
+  --info: #00527c;
+  --info-bg: #eaf4ff;
+  --brand: #5d7159;
+  --r-card: 12px;
+  --r-ctl: 8px;
+  --shadow-card: 0 1px 0 rgba(26,26,26,.07), 0 0 0 1px rgba(26,26,26,.06);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { font: 13px/1.5 Inter, system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
+a { color: inherit; text-decoration: none; }
+h1, h2, h3, p { margin: 0; }
+h1 { font-size: 20px; font-weight: 600; line-height: 1.3; }
+h2 { font-size: 14px; font-weight: 600; }
+code { font: 12px ui-monospace, Consolas, monospace; color: var(--text-subdued); }
+.sub { color: var(--text-subdued); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+
+/* Estrutura */
+.topbar { position: sticky; top: 0; z-index: 30; height: 56px; background: var(--topbar); color: #e3e3e3; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; }
+.topbar .logo { display: flex; align-items: center; gap: 10px; font-weight: 600; color: #fff; }
+.topbar .logo i { width: 28px; height: 28px; border-radius: 8px; background: var(--brand); display: grid; place-items: center; font-style: normal; font-size: 14px; }
+.topbar .logo small { font-weight: 400; color: #b5b5b5; font-size: 12px; }
+.topbar .user { display: flex; align-items: center; gap: 8px; padding: 4px 8px 4px 4px; border-radius: 8px; background: #303030; font-size: 12px; }
+.topbar .user i { width: 24px; height: 24px; border-radius: 6px; background: #c8d2bf; color: #2c3326; display: grid; place-items: center; font-style: normal; font-weight: 600; font-size: 11px; }
+.frame { display: grid; grid-template-columns: 240px 1fr; min-height: calc(100vh - 56px); }
+.nav { background: var(--nav); padding: 12px; display: flex; flex-direction: column; gap: 2px; border-right: 1px solid var(--border); }
+.nav a { display: flex; align-items: center; gap: 10px; padding: 7px 10px; border-radius: 8px; font-weight: 500; color: var(--text); }
+.nav a:hover { background: #f1f1f1; }
+.nav a.active { background: #fafafa; box-shadow: var(--shadow-card); font-weight: 600; }
+.nav a svg { color: #4a4a4a; flex: none; }
+.nav .spacer { flex: 1; }
+.nav .ext { color: var(--text-subdued); font-weight: 400; }
+main { padding: 24px 24px 96px; min-width: 0; }
+.page { max-width: 1000px; margin: 0 auto; }
+.page-h { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
+.page-h .title { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.page-h .acts { display: flex; gap: 8px; }
+.back { width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center; color: var(--text-subdued); }
+.back:hover { background: #e3e3e3; }
+
+/* Cartão */
+.card { background: var(--surface); border-radius: var(--r-card); box-shadow: var(--shadow-card); margin-bottom: 16px; }
+.card-b { padding: 16px; }
+.card-h { padding: 16px 16px 0; display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.card-h + .card-b { padding-top: 12px; }
+.cols { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+/* Botões */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 28px; padding: 0 12px; border-radius: var(--r-ctl); border: 0; background: #fff; color: var(--text); font: 600 12px/1 Inter, system-ui, sans-serif; box-shadow: 0 0 0 1px #e3e3e3 inset, 0 1px 0 #b5b5b5; cursor: pointer; white-space: nowrap; }
+.btn:hover { background: #fafafa; }
+.btn.primary { background: var(--primary); color: #fff; box-shadow: 0 -1px 0 1px rgba(0,0,0,.8) inset, 0 0 0 1px #303030 inset; }
+.btn.primary:hover { background: var(--primary-hover); }
+.btn.critical { background: #e51c00; color: #fff; box-shadow: none; }
+.btn.plain { background: none; box-shadow: none; color: var(--focus); font-weight: 500; padding: 0 4px; }
+.btn.plain.crit { color: var(--critical); }
+.btn.plain:hover { text-decoration: underline; }
+.btn.icon { width: 28px; padding: 0; }
+.btn[aria-disabled="true"] { opacity: .45; pointer-events: none; }
+.btn.lg { height: 32px; }
+
+/* Formulário */
+.field { margin-bottom: 14px; }
+.field:last-child { margin-bottom: 0; }
+.field label, .lbl { display: block; margin-bottom: 4px; font-weight: 500; }
+.input, select.input, textarea.input { width: 100%; height: 32px; padding: 0 12px; border: 1px solid var(--border-input); border-radius: var(--r-ctl); background: #fdfdfd; color: var(--text); font: inherit; }
+textarea.input { height: auto; padding: 8px 12px; }
+.input:focus { outline: 2px solid var(--focus); outline-offset: 0; border-color: var(--focus); }
+.affix { display: flex; align-items: center; border: 1px solid var(--border-input); border-radius: var(--r-ctl); background: #fdfdfd; overflow: hidden; }
+.affix > span { padding: 0 0 0 12px; color: var(--text-subdued); white-space: nowrap; }
+.affix > .input { border: 0; background: none; padding-left: 2px; }
+.affix > .input:focus { outline: 0; }
+.affix:focus-within { outline: 2px solid var(--focus); border-color: var(--focus); }
+.help { margin-top: 4px; color: var(--text-subdued); font-size: 12px; }
+.err { margin-top: 4px; color: var(--critical); font-size: 12px; display: flex; gap: 6px; }
+.err::before { content: "!"; flex: none; width: 14px; height: 14px; border-radius: 50%; background: var(--critical-border); color: #fff; font-size: 10px; font-weight: 700; display: grid; place-items: center; margin-top: 2px; }
+.has-err .input, .has-err .affix, .has-err .rte { border-color: var(--critical-border); background: #fff5f4; }
+.rte { border: 1px solid var(--border-input); border-radius: var(--r-ctl); overflow: hidden; background: #fdfdfd; }
+.rte-bar { display: flex; gap: 2px; padding: 4px; background: var(--surface-subdued); border-bottom: 1px solid var(--border); }
+.rte-bar button { width: 28px; height: 28px; border: 0; border-radius: 6px; background: none; font: 600 13px Georgia, serif; color: var(--text); cursor: pointer; }
+.rte-bar button:hover { background: #e3e3e3; }
+.rte-body { min-height: 120px; padding: 10px 12px; }
+.rte-body p { margin-bottom: 8px; }
+.rte-body ul { margin: 0; padding-left: 18px; }
+
+/* Avisos */
+.banner { display: flex; gap: 12px; align-items: flex-start; padding: 12px 16px; border-radius: var(--r-card); margin-bottom: 16px; box-shadow: var(--shadow-card); background: var(--surface); border-top: 4px solid var(--border-input); }
+.banner b { display: block; margin-bottom: 2px; }
+.banner .acts { margin-top: 10px; display: flex; gap: 8px; }
+.banner.critical { border-top-color: var(--critical-border); background: var(--critical-bg); color: var(--critical); }
+.banner.warning { border-top-color: #ffb800; background: var(--warning-bg); color: var(--warning); }
+.banner.info { border-top-color: #0094d5; background: var(--info-bg); color: var(--info); }
+.inline-note { padding: 10px 12px; border-radius: var(--r-ctl); background: var(--surface-subdued); color: var(--text-subdued); font-size: 12px; }
+.inline-note.critical { background: var(--critical-bg); color: var(--critical); }
+.badge { display: inline-flex; align-items: center; height: 20px; padding: 0 8px; border-radius: 8px; background: #e3e3e3; color: var(--text-subdued); font-size: 12px; font-weight: 500; white-space: nowrap; }
+.badge.success { background: var(--success-bg); color: var(--success); }
+.badge.attention { background: var(--warning-bg); color: var(--warning); }
+.badge.critical { background: var(--critical-bg); color: var(--critical); }
+.toast { position: fixed; left: 50%; bottom: 64px; transform: translateX(-50%); z-index: 60; background: #1a1a1a; color: #fff; padding: 10px 16px; border-radius: 8px; font-weight: 500; box-shadow: 0 8px 24px rgba(0,0,0,.25); }
+.empty { text-align: center; padding: 56px 24px; }
+.empty .art { width: 72px; height: 72px; margin: 0 auto 16px; border-radius: 50%; background: #dde4d3; display: grid; place-items: center; color: var(--brand); }
+.empty h2 { font-size: 16px; margin-bottom: 4px; }
+.empty p { color: var(--text-subdued); max-width: 400px; margin: 0 auto 16px; }
+
+/* Modal */
+.mask { position: fixed; inset: 0; z-index: 50; background: rgba(0,0,0,.45); display: grid; place-items: center; padding: 16px; }
+.modal { width: 100%; max-width: 520px; background: #fff; border-radius: 16px; box-shadow: 0 20px 48px rgba(0,0,0,.3); overflow: hidden; }
+.modal-h { padding: 14px 16px; background: #f3f3f3; border-bottom: 1px solid var(--border); font-weight: 600; font-size: 14px; }
+.modal-b { padding: 16px; }
+.modal-f { padding: 12px 16px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 8px; }
+.moves { margin: 12px 0; border: 1px solid var(--border); border-radius: var(--r-ctl); }
+.moves div { padding: 8px 12px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.moves div + div { border-top: 1px solid var(--border); }
+
+/* Árvore de categorias */
+.trow { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-top: 1px solid var(--border); }
+.trow:first-child { border-top: 0; }
+.trow.l2 { padding-left: 44px; }
+.trow.l3 { padding-left: 72px; }
+.trow .tname { font-weight: 600; }
+.trow.l2 .tname, .trow.l3 .tname { font-weight: 500; }
+.trow .grow { flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.trow .acts { display: flex; align-items: center; gap: 4px; }
+.twig { color: #b5b5b5; margin-right: -4px; }
+
+/* Tabela */
+.tabs { display: flex; gap: 4px; padding: 8px 12px; border-bottom: 1px solid var(--border); align-items: center; flex-wrap: wrap; }
+.tabs a { padding: 5px 12px; border-radius: 8px; font-weight: 500; color: var(--text-subdued); }
+.tabs a.on { background: #ebebeb; color: var(--text); }
+.tabs .input { width: 240px; margin-left: auto; }
+table { width: 100%; border-collapse: collapse; }
+th { text-align: left; font-weight: 500; font-size: 12px; color: var(--text-subdued); background: var(--surface-subdued); padding: 8px 12px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+tr:last-child td { border-bottom: 0; }
+tbody tr:hover { background: #fafafa; }
+.tscroll { overflow-x: auto; }
+.pcell { display: flex; align-items: center; gap: 12px; min-width: 220px; }
+.pcell a { font-weight: 600; }
+.pcell a:hover { text-decoration: underline; }
+.thumb { width: 40px; height: 40px; flex: none; border-radius: 8px; border: 1px solid var(--border); background: #dde4d3; }
+.thumb.none { background: var(--surface-subdued); display: grid; place-items: center; color: #b5b5b5; font-size: 10px; }
+.t1 { background: #c8d2bf; } .t2 { background: #e9d6cc; } .t3 { background: #ece1bf; } .t4 { background: #d6d3c2; }
+.strike { text-decoration: line-through; color: var(--text-subdued); font-size: 12px; }
+.num { text-align: right; white-space: nowrap; }
+
+/* Galeria */
+.gal { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.tile { position: relative; aspect-ratio: 1/1; border-radius: 8px; border: 1px solid var(--border); overflow: hidden; display: flex; align-items: flex-end; padding: 6px; font-size: 11px; color: #2c3326; }
+.tile .cover { position: absolute; top: 6px; left: 6px; }
+.tile .tacts { position: absolute; top: 4px; right: 4px; display: flex; gap: 2px; }
+.tile .tacts a { width: 22px; height: 22px; border-radius: 6px; background: rgba(255,255,255,.9); display: grid; place-items: center; font-size: 12px; color: var(--text); }
+.tile.busy { background: var(--surface-subdued); align-items: center; justify-content: center; text-align: center; color: var(--text-subdued); border-style: dashed; }
+.drop { margin-top: 10px; border: 1px dashed var(--border-input); border-radius: 8px; padding: 18px; text-align: center; background: var(--surface-subdued); }
+.drop p { color: var(--text-subdued); font-size: 12px; margin-top: 8px; }
+.proto-note { border: 1px dashed #b5b5b5; border-radius: var(--r-card); padding: 16px; color: var(--text-subdued); }
+
+/* Páginas inteiras (sem a estrutura do painel) */
+.full { min-height: 100vh; display: grid; place-items: center; padding: 24px; }
+.full .card { max-width: 440px; width: 100%; text-align: center; }
+.full .card-b { padding: 32px 24px; }
+.full h1 { margin-bottom: 8px; }
+.full p { color: var(--text-subdued); margin-bottom: 16px; }
+
+@media (max-width: 860px) {
+  .frame { grid-template-columns: 1fr; }
+  .nav { flex-direction: row; overflow-x: auto; border-right: 0; border-bottom: 1px solid var(--border); padding: 8px; }
+  .nav .spacer { display: none; }
+  main { padding: 16px 12px 96px; }
+  .cols { grid-template-columns: 1fr; }
+  .gal { grid-template-columns: repeat(3, 1fr); }
+  .trow { flex-wrap: wrap; }
+  .trow.l2 { padding-left: 28px; } .trow.l3 { padding-left: 40px; }
+  .tabs .input { width: 100%; margin-left: 0; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═════════ UI-05 — páginas inteiras ═════════ -->
+<div class="full" data-ui="UI-05" data-when="semPermissao">
+  <div class="card"><div class="card-b">
+    <h1>Acesso negado</h1>
+    <p>Sua conta não tem permissão para acessar o painel da loja.</p>
+    <a class="btn lg" href="loja.html">Voltar para a loja</a>
+  </div></div>
+</div>
+<div class="full" data-ui="UI-05" data-when="erro">
+  <div class="card"><div class="card-b">
+    <h1>Algo não saiu como esperado</h1>
+    <p>Não foi possível abrir esta página do painel. Nada foi alterado.</p>
+    <a class="btn primary lg" href="#UI-09">Tentar novamente</a>
+  </div></div>
+</div>
+
+<!-- ═════════ Estrutura do painel (UI-05.default e demais telas) ═════════ -->
+<div data-ui="UI-05 UI-06 UI-07 UI-08 UI-09 UI-10" data-unless="semPermissao erro">
+  <header class="topbar">
+    <a class="logo" href="#UI-09"><i>✿</i> Flora Bambini <small>Painel</small></a>
+    <div class="user"><i>AD</i> Administradora</div>
+  </header>
+  <div class="frame">
+    <nav class="nav" aria-label="Painel">
+      <a href="#UI-09" data-nav="UI-09 UI-10">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 6.5 10 3l7 3.5v7L10 17l-7-3.5v-7Z"/><path d="M3 6.5 10 10l7-3.5M10 10v7"/></svg>
+        Produtos
+      </a>
+      <a href="#UI-06" data-nav="UI-06 UI-07">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 4h5v4H4zM11 12h5v4h-5zM11 4h5M6.5 8v6H11"/></svg>
+        Categorias
+      </a>
+      <a href="#UI-08" data-nav="UI-08">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 10.5V4h6.5l7.5 7.5-6.5 6.5L3 10.5Z"/><circle cx="6.8" cy="7.8" r="1"/></svg>
+        Marcas
+      </a>
+      <span class="spacer"></span>
+      <a class="ext" href="loja.html">Ver loja ↗</a>
+    </nav>
+
+    <main>
+
+      <!-- ───────── UI-05.default ───────── -->
+      <section class="page" data-ui="UI-05">
+        <div class="proto-note">
+          <b>Anotação de protótipo.</b> Esta é a estrutura comum a todas as telas do painel: barra superior, navegação lateral com
+          Produtos, Categorias e Marcas, e a área de conteúdo. <code>/admin</code> não tem tela própria e leva a Produtos.
+          Os estados <code>semPermissao</code> e <code>erro</code> substituem a página inteira.
+        </div>
+      </section>
+
+      <!-- ───────── UI-06 — Árvore de categorias ───────── -->
+      <section class="page" data-ui="UI-06">
+        <div class="page-h">
+          <h1>Categorias</h1>
+          <a class="btn primary lg" href="#UI-07.novo" data-unless="vazio">Adicionar categoria</a>
+        </div>
+
+        <div class="banner critical" data-when="excluirRecusada" role="alert">
+          <div>
+            <b>Não foi possível excluir “Cabelo”</b>
+            Ela tem 2 subcategorias e 1 produto vinculado (ativo ou inativo). Exclua ou mova as subcategorias e passe o produto para outra categoria antes de excluir.
+          </div>
+        </div>
+
+        <div class="card" data-unless="vazio">
+          <div class="card-b sub" style="padding-bottom:12px">A contagem mostra os produtos ativos de cada categoria, incluindo os das subcategorias. A ordem aqui é a ordem do menu da loja.</div>
+          <div id="tree" style="border-top:1px solid var(--border)"></div>
+        </div>
+
+        <div class="card" data-when="vazio">
+          <div class="empty">
+            <div class="art"><svg width="32" height="32" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M4 4h5v4H4zM11 12h5v4h-5zM11 4h5M6.5 8v6H11"/></svg></div>
+            <h2>Monte a árvore de categorias</h2>
+            <p>As categorias são o caminho da cliente até o produto. Comece pelas linhas da loja, como Flora e Bambini, e depois crie as subcategorias.</p>
+            <a class="btn primary lg" href="#UI-07.novo">Criar primeira categoria</a>
+          </div>
+        </div>
+
+        <div class="mask" data-when="excluirConfirmacao">
+          <div class="modal" role="dialog" aria-modal="true" aria-labelledby="m-exc-cat">
+            <div class="modal-h" id="m-exc-cat">Excluir “Acessórios”?</div>
+            <div class="modal-b">A categoria não tem subcategorias nem produtos. Ela sai do painel e do menu da loja. Esta ação não pode ser desfeita.</div>
+            <div class="modal-f"><a class="btn lg" href="#UI-06">Cancelar</a><a class="btn critical lg" href="#UI-06.sucesso">Excluir categoria</a></div>
+          </div>
+        </div>
+        <div class="toast" data-when="sucesso" role="status">Alteração salva. A loja já mostra a nova estrutura.</div>
+      </section>
+
+      <!-- ───────── UI-07 — Formulário de categoria ───────── -->
+      <section class="page" data-ui="UI-07">
+        <div class="page-h">
+          <div class="title"><a class="back" href="#UI-06" aria-label="Voltar para categorias">←</a><h1 id="cat-title">Nova categoria</h1></div>
+          <div class="acts">
+            <a class="btn lg" href="#UI-06">Descartar</a>
+            <a class="btn primary lg" id="cat-save" href="#UI-06.sucesso">Salvar</a>
+          </div>
+        </div>
+
+        <div class="banner critical" data-when="erroEnvio" role="alert">
+          <div><b>Não foi possível salvar</b>Nada foi alterado, e o que você digitou continua aqui. Tente salvar de novo.</div>
+        </div>
+
+        <div class="card"><div class="card-b">
+          <div class="field" id="f-cat-nome">
+            <label for="cat-nome">Nome</label>
+            <input class="input" id="cat-nome" />
+            <p class="err" data-when="obrigatorio">Informe o nome da categoria.</p>
+          </div>
+          <div class="field" id="f-cat-pai">
+            <label for="cat-pai">Categoria pai</label>
+            <select class="input" id="cat-pai">
+              <option>Nenhuma (categoria raiz)</option>
+              <option>Flora</option>
+              <option>Flora › Cabelo</option>
+              <option>Flora › Cabelo › Shampoo</option>
+              <option>Flora › Cabelo › Condicionador</option>
+              <option>Flora › Corpo</option>
+              <option>Flora › Casa</option>
+              <option>Bambini</option>
+              <option>Bambini › Banho</option>
+              <option>Bambini › Cabelo</option>
+              <option>Bambini › Acessórios</option>
+            </select>
+            <p class="help">A árvore tem até 3 níveis.</p>
+            <p class="err" data-when="profundidade">“Shampoo” já está no nível 3 e não pode ter subcategorias. A árvore tem no máximo 3 níveis.</p>
+            <p class="err" data-when="ciclo">Uma categoria não pode ficar dentro dela mesma nem de uma de suas subcategorias.</p>
+          </div>
+          <div class="field" id="f-cat-slug">
+            <label for="cat-slug">Endereço na loja</label>
+            <div class="affix"><span id="cat-prefix">/</span><input class="input" id="cat-slug" /></div>
+            <p class="help" data-when="novo obrigatorio slugRepetido slugReservado profundidade">Sugerido a partir do nome. Você pode ajustar antes de salvar.</p>
+            <p class="help" data-when="edicao ciclo avisoImpacto enviando erroEnvio">Mudar o nome não muda o endereço. Se você alterar o endereço ou a categoria pai, os endereços antigos passam a redirecionar para os novos.</p>
+            <p class="err" data-when="slugRepetido">Já existe uma categoria com o endereço “cabelo” dentro de Flora. Escolha outro endereço.</p>
+            <p class="err" data-when="slugReservado">“produto” é um endereço reservado pela loja. Escolha outro.</p>
+          </div>
+        </div></div>
+
+        <div class="mask" data-when="avisoImpacto">
+          <div class="modal" role="dialog" aria-modal="true" aria-labelledby="m-impacto">
+            <div class="modal-h" id="m-impacto">Os endereços vão mudar</div>
+            <div class="modal-b">
+              Mover “Cabelo” para dentro de “Bambini” muda o endereço de <b>2 categorias</b>:
+              <div class="moves">
+                <div><code>/flora/cabelo</code> → <code>/bambini/cabelo</code></div>
+                <div><code>/flora/cabelo/shampoo</code> → <code>/bambini/cabelo/shampoo</code></div>
+              </div>
+              Os endereços antigos continuam funcionando: eles passam a redirecionar para os novos.
+            </div>
+            <div class="modal-f"><a class="btn lg" href="#UI-07.edicao">Cancelar</a><a class="btn primary lg" href="#UI-06.sucesso">Confirmar alteração</a></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ───────── UI-08 — Marcas ───────── -->
+      <section class="page" data-ui="UI-08">
+        <div class="page-h">
+          <h1>Marcas</h1>
+          <a class="btn primary lg" href="#UI-08.formulario" data-unless="vazio">Adicionar marca</a>
+        </div>
+
+        <div class="banner critical" data-when="excluirRecusada" role="alert">
+          <div><b>Não foi possível excluir “Verde Vida”</b>3 produtos usam esta marca. Troque a marca desses produtos antes de excluir.</div>
+        </div>
+
+        <div class="card" data-unless="vazio">
+          <div class="tscroll"><table>
+            <thead><tr><th>Marca</th><th>Produtos</th><th></th></tr></thead>
+            <tbody>
+              <tr><td><b>Aurora</b></td><td>2 produtos</td><td class="num"><a class="btn plain" href="#UI-08.formulario">Editar</a> <a class="btn plain crit" href="#UI-08.excluirRecusada">Excluir</a></td></tr>
+              <tr><td><b>Raiz</b></td><td>3 produtos</td><td class="num"><a class="btn plain" href="#UI-08.formulario">Editar</a> <a class="btn plain crit" href="#UI-08.excluirRecusada">Excluir</a></td></tr>
+              <tr><td><b>Terra Viva</b></td><td class="sub">Nenhum produto</td><td class="num"><a class="btn plain" href="#UI-08.formulario">Editar</a> <a class="btn plain crit" href="#UI-08.excluirConfirmacao">Excluir</a></td></tr>
+              <tr><td><b>Verde Vida</b></td><td>3 produtos</td><td class="num"><a class="btn plain" href="#UI-08.formulario">Editar</a> <a class="btn plain crit" href="#UI-08.excluirRecusada">Excluir</a></td></tr>
+            </tbody>
+          </table></div>
+        </div>
+
+        <div class="card" data-when="vazio">
+          <div class="empty">
+            <div class="art"><svg width="32" height="32" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 10.5V4h6.5l7.5 7.5-6.5 6.5L3 10.5Z"/><circle cx="6.8" cy="7.8" r="1"/></svg></div>
+            <h2>Cadastre as marcas dos fabricantes</h2>
+            <p>Todo produto precisa de uma marca. Na loja, a cliente usa a marca para filtrar os produtos de uma categoria.</p>
+            <a class="btn primary lg" href="#UI-08.formulario">Adicionar marca</a>
+          </div>
+        </div>
+
+        <div class="mask" data-when="formulario nomeRepetido enviando erroEnvio">
+          <div class="modal" role="dialog" aria-modal="true" aria-labelledby="m-marca">
+            <div class="modal-h" id="m-marca">Marca</div>
+            <div class="modal-b">
+              <div class="inline-note critical" data-when="erroEnvio" role="alert" style="margin-bottom:12px">Não foi possível salvar. O nome que você digitou continua aqui. Tente de novo.</div>
+              <div class="field">
+                <label for="marca-nome">Nome</label>
+                <input class="input" id="marca-nome" data-val="" data-val-nome-repetido=" verde vida " data-val-enviando="Flor do Campo" data-val-erro-envio="Flor do Campo" />
+                <p class="err" data-when="nomeRepetido">A marca “Verde Vida” já existe.</p>
+              </div>
+            </div>
+            <div class="modal-f">
+              <a class="btn lg" href="#UI-08">Cancelar</a>
+              <a class="btn primary lg" href="#UI-08.sucesso" data-unless="enviando">Salvar</a>
+              <a class="btn primary lg" aria-disabled="true" data-when="enviando">Salvando…</a>
+            </div>
+          </div>
+        </div>
+        <div class="mask" data-when="excluirConfirmacao">
+          <div class="modal" role="dialog" aria-modal="true" aria-labelledby="m-exc-marca">
+            <div class="modal-h" id="m-exc-marca">Excluir “Terra Viva”?</div>
+            <div class="modal-b">Nenhum produto usa esta marca. Esta ação não pode ser desfeita.</div>
+            <div class="modal-f"><a class="btn lg" href="#UI-08">Cancelar</a><a class="btn critical lg" href="#UI-08.sucesso">Excluir marca</a></div>
+          </div>
+        </div>
+        <div class="toast" data-when="sucesso" role="status">Marcas atualizadas.</div>
+      </section>
+
+      <!-- ───────── UI-09 — Listagem de produtos ───────── -->
+      <section class="page" data-ui="UI-09">
+        <div class="page-h">
+          <h1>Produtos</h1>
+          <a class="btn primary lg" href="#UI-10.novo" data-unless="vazio">Adicionar produto</a>
+        </div>
+
+        <div class="banner critical" data-when="ativarRecusado" role="alert">
+          <div>
+            <b>Não foi possível ativar “Condicionador de Babosa”</b>
+            Para aparecer na loja, o produto precisa de ao menos uma imagem.
+            <div class="acts"><a class="btn" href="#UI-10.ativarRecusado">Adicionar imagem</a></div>
+          </div>
+        </div>
+
+        <div class="card" data-unless="vazio">
+          <div class="tabs">
+            <a class="on" href="#UI-09">Todos</a><a href="#UI-09">Ativos</a><a href="#UI-09">Inativos</a>
+            <input class="input" aria-label="Filtrar por nome" placeholder="Filtrar por nome" data-val="" data-val-vazio-filtro="sabonete de rosas" />
+          </div>
+          <div class="tscroll" data-unless="vazioFiltro"><table>
+            <thead><tr><th>Produto</th><th>Situação</th><th>Estoque</th><th>Categoria</th><th>Marca</th><th class="num">Preço</th><th></th></tr></thead>
+            <tbody id="prows"></tbody>
+          </table></div>
+          <div class="empty" data-when="vazioFiltro">
+            <h2>Nenhum produto encontrado</h2>
+            <p>Nenhum produto corresponde a “sabonete de rosas”.</p>
+            <a class="btn lg" href="#UI-09">Limpar filtro</a>
+          </div>
+        </div>
+
+        <div class="card" data-when="vazio">
+          <div class="empty">
+            <div class="art"><svg width="32" height="32" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 6.5 10 3l7 3.5v7L10 17l-7-3.5v-7Z"/><path d="M3 6.5 10 10l7-3.5M10 10v7"/></svg></div>
+            <h2>Cadastre o primeiro produto</h2>
+            <p>O produto nasce inativo. Depois de enviar ao menos uma imagem, você ativa e ele aparece na loja.</p>
+            <a class="btn primary lg" href="#UI-10.novo">Adicionar produto</a>
+          </div>
+        </div>
+        <div class="toast" data-when="sucesso" role="status">“Loção de Calêndula” foi inativado e saiu da loja.</div>
+      </section>
+
+      <!-- ───────── UI-10 — Formulário de produto ───────── -->
+      <section class="page" data-ui="UI-10">
+        <div class="page-h">
+          <div class="title">
+            <a class="back" href="#UI-09" aria-label="Voltar para produtos">←</a>
+            <h1 id="prod-title">Shampoo de Camomila</h1>
+            <span class="badge" id="prod-badge">Inativo</span>
+          </div>
+          <div class="acts">
+            <a class="btn lg" href="#UI-09">Descartar</a>
+            <a class="btn primary lg" href="#UI-10.sucesso" data-unless="enviando conflito">Salvar</a>
+            <a class="btn primary lg" aria-disabled="true" data-when="enviando">Salvando…</a>
+            <a class="btn primary lg" aria-disabled="true" data-when="conflito">Salvar</a>
+          </div>
+        </div>
+
+        <div class="banner warning" data-when="conflito" role="alert">
+          <div>
+            <b>Este produto mudou depois que você abriu esta tela</b>
+            Nada foi salvo. Recarregue para ver os dados atuais, como o estoque. O que você alterou aqui precisará ser refeito.
+            <div class="acts"><a class="btn" href="#UI-10.edicao">Recarregar</a></div>
+          </div>
+        </div>
+        <div class="banner critical" data-when="validacao" role="alert">
+          <div><b>Revise 5 campos antes de salvar</b>Categoria, marca, preço promocional, estoque e endereço.</div>
+        </div>
+        <div class="banner critical" data-when="erroEnvio" role="alert">
+          <div><b>Não foi possível salvar</b>Nada foi alterado, e o que você digitou continua aqui. Tente salvar de novo.</div>
+        </div>
+        <div class="banner critical" data-when="ativarRecusado" role="alert">
+          <div><b>Não foi possível ativar o produto</b>Para aparecer na loja, o produto precisa de ao menos uma imagem.</div>
+        </div>
+
+        <div class="cols">
+          <div>
+            <div class="card"><div class="card-b">
+              <div class="field">
+                <label for="p-nome">Nome</label>
+                <input class="input" id="p-nome" data-val="Shampoo de Camomila" data-val-novo="" data-val-ativar-recusado="Condicionador de Babosa" />
+              </div>
+              <div class="field">
+                <span class="lbl" id="l-desc">Descrição</span>
+                <div class="rte" role="group" aria-labelledby="l-desc">
+                  <div class="rte-bar">
+                    <button type="button" aria-label="Negrito"><b>B</b></button>
+                    <button type="button" aria-label="Itálico"><i>I</i></button>
+                    <button type="button" aria-label="Lista com marcadores">•</button>
+                    <button type="button" aria-label="Lista numerada">1.</button>
+                    <button type="button" aria-label="Link">↗</button>
+                  </div>
+                  <div class="rte-body" data-unless="novo">
+                    <p>Limpa sem ressecar, com espuma cremosa. <b>Não arde nos olhos.</b></p>
+                    <ul><li>Camomila orgânica</li><li>Aloe vera</li></ul>
+                  </div>
+                  <div class="rte-body" data-when="novo"></div>
+                </div>
+                <p class="help">Aceita parágrafos, negrito, itálico, listas e links. Qualquer outra formatação é removida ao salvar.</p>
+              </div>
+            </div></div>
+
+            <div class="card">
+              <div class="card-h"><h2>Imagens</h2><span class="sub" id="gal-count">2 de 8</span></div>
+              <div class="card-b">
+                <div class="inline-note" data-when="novo">Salve o produto para enviar as imagens.</div>
+
+                <div class="inline-note critical" data-when="imagemRecusada" role="alert" style="margin-bottom:10px">
+                  <b>2 arquivos não foram enviados</b><br />
+                  catalogo.pdf — formato não aceito. Envie JPG, PNG ou WebP.<br />
+                  verso-grande.jpg — tem 2 MB. O limite é 1 MB.
+                </div>
+                <div class="inline-note critical" data-when="removerUltimaRecusado" role="alert" style="margin-bottom:10px">
+                  Um produto ativo precisa de ao menos uma imagem. Envie outra imagem antes de remover esta, ou inative o produto.
+                </div>
+
+                <div class="gal" id="gal" data-unless="novo"></div>
+
+                <div class="drop" data-unless="novo galeriaCheia">
+                  <a class="btn" href="#UI-10.enviandoImagem">Adicionar imagens</a>
+                  <p>JPG, PNG ou WebP · até 1 MB · no mínimo 1000 × 1000 px.<br />Envie a foto já quadrada: imagem que não é quadrada é cortada ao centro.</p>
+                </div>
+                <div class="inline-note" data-when="galeriaCheia" style="margin-top:10px">Limite de 8 imagens atingido. Remova uma para enviar outra.</div>
+                <p class="help" data-unless="novo" style="margin-top:10px">A primeira imagem é a capa usada nas listagens. Use as setas para mudar a ordem.</p>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-h"><h2>Preço</h2></div>
+              <div class="card-b">
+                <div class="row2">
+                  <div class="field">
+                    <label for="p-preco">Preço</label>
+                    <div class="affix"><span>R$</span><input class="input" id="p-preco" inputmode="decimal" data-val="42,90" data-val-novo="" data-val-validacao="40,00" /></div>
+                  </div>
+                  <div class="field">
+                    <label for="p-promo">Preço promocional <span class="sub">(opcional)</span></label>
+                    <div class="affix"><span>R$</span><input class="input" id="p-promo" inputmode="decimal" data-val="" data-val-validacao="45,00" /></div>
+                    <p class="err" data-when="validacao">O preço promocional precisa ser menor que o preço.</p>
+                  </div>
+                </div>
+                <p class="help">A promoção vale enquanto o preço promocional estiver preenchido. Para encerrar, apague o valor.</p>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-h"><h2>Estoque</h2></div>
+              <div class="card-b">
+                <div class="field" style="max-width:200px">
+                  <label for="p-estoque">Quantidade disponível</label>
+                  <input class="input" id="p-estoque" inputmode="numeric" data-val="5" data-val-novo="" data-val-validacao="-1" data-val-conflito="10" />
+                  <p class="err" data-when="validacao">O estoque não pode ser negativo.</p>
+                </div>
+                <p class="help">Com estoque zero, o produto continua na loja marcado como esgotado. A cliente não vê a quantidade.</p>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="card">
+              <div class="card-h"><h2>Situação</h2><span class="badge" id="prod-badge2">Inativo</span></div>
+              <div class="card-b">
+                <p class="sub" data-when="novo" style="margin-bottom:0">Todo produto novo nasce inativo. Depois de salvar e enviar ao menos uma imagem, você pode ativá-lo.</p>
+                <div id="status-act" data-unless="novo"></div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-h"><h2>Organização</h2></div>
+              <div class="card-b">
+                <div class="field">
+                  <label for="p-cat">Categoria</label>
+                  <select class="input" id="p-cat" data-val="Flora › Cabelo › Shampoo" data-val-novo="Escolha uma categoria" data-val-validacao="Escolha uma categoria">
+                    <option>Escolha uma categoria</option>
+                    <option>Flora</option><option>Flora › Cabelo</option><option>Flora › Cabelo › Shampoo</option><option>Flora › Cabelo › Condicionador</option>
+                    <option>Flora › Corpo</option><option>Flora › Casa</option>
+                    <option>Bambini</option><option>Bambini › Banho</option><option>Bambini › Cabelo</option><option>Bambini › Acessórios</option>
+                  </select>
+                  <p class="err" data-when="validacao">Escolha uma categoria.</p>
+                </div>
+                <div class="field">
+                  <label for="p-marca">Marca</label>
+                  <select class="input" id="p-marca" data-val="Verde Vida" data-val-novo="Escolha uma marca" data-val-validacao="Escolha uma marca">
+                    <option>Escolha uma marca</option><option>Aurora</option><option>Raiz</option><option>Terra Viva</option><option>Verde Vida</option>
+                  </select>
+                  <p class="err" data-when="validacao">Escolha uma marca.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-h"><h2>Endereço na loja</h2></div>
+              <div class="card-b">
+                <div class="field">
+                  <div class="affix"><span>/produto/</span><input class="input" id="p-slug" aria-label="Endereço do produto" data-val="shampoo-de-camomila" data-val-novo="" data-val-validacao="shampoo-de-alecrim" data-val-ativar-recusado="condicionador-de-babosa" /></div>
+                  <p class="err" data-when="validacao">Este endereço já é usado por outro produto.</p>
+                  <p class="help" data-when="novo">Sugerido a partir do nome. Você pode ajustar antes de salvar.</p>
+                  <p class="help" data-unless="novo">Se você alterar, o endereço antigo passa a redirecionar para o novo.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mask" data-when="removerImagem">
+          <div class="modal" role="dialog" aria-modal="true" aria-labelledby="m-rem-img">
+            <div class="modal-h" id="m-rem-img">Remover esta imagem?</div>
+            <div class="modal-b">A imagem “verso” sai da galeria e todas as versões dela são apagadas. Esta ação não pode ser desfeita.</div>
+            <div class="modal-f"><a class="btn lg" href="#UI-10.edicao">Cancelar</a><a class="btn critical lg" href="#UI-10.sucesso">Remover imagem</a></div>
+          </div>
+        </div>
+        <div class="toast" data-when="sucesso" role="status">Produto salvo.</div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<script src="proto.js"></script>
+<script>
+// ── Dados de exemplo ──
+var TREE = [
+  { n: "Flora", p: "/flora", l: 1, c: 4 },
+  { n: "Cabelo", p: "/flora/cabelo", l: 2, c: 2, del: "excluirRecusada" },
+  { n: "Shampoo", p: "/flora/cabelo/shampoo", l: 3, c: 2 },
+  { n: "Condicionador", p: "/flora/cabelo/condicionador", l: 3, c: 0 },
+  { n: "Corpo", p: "/flora/corpo", l: 2, c: 2 },
+  { n: "Casa", p: "/flora/casa", l: 2, c: 0 },
+  { n: "Bambini", p: "/bambini", l: 1, c: 2 },
+  { n: "Banho", p: "/bambini/banho", l: 2, c: 1 },
+  { n: "Cabelo", p: "/bambini/cabelo", l: 2, c: 1 },
+  { n: "Acessórios", p: "/bambini/acessorios", l: 2, c: 0, del: "excluirConfirmacao" }
+];
+var PRODUCTS = [
+  { n: "Shampoo de Camomila", t: "t1", on: 1, s: 5, cat: "Flora › Cabelo › Shampoo", m: "Verde Vida", p: "42,90" },
+  { n: "Shampoo de Alecrim", t: "t4", on: 1, s: 12, cat: "Flora › Cabelo › Shampoo", m: "Raiz", p: "50,00", promo: "39,90" },
+  { n: "Condicionador de Babosa", t: "", on: 0, s: 8, cat: "Flora › Cabelo", m: "Raiz", p: "38,00" },
+  { n: "Óleo de Amêndoas", t: "t3", on: 1, s: 0, cat: "Flora › Corpo", m: "Verde Vida", p: "54,00" },
+  { n: "Loção de Calêndula", t: "t2", on: 1, s: 3, cat: "Flora › Corpo", m: "Aurora", p: "64,00", promo: "49,90" },
+  { n: "Limpador Multiuso de Laranja", t: "t3", on: 0, s: 6, cat: "Flora › Casa", m: "Raiz", p: "24,90" },
+  { n: "Sabonete de Lavanda", t: "t2", on: 1, s: 20, cat: "Bambini › Banho", m: "Aurora", p: "18,50" },
+  { n: "Shampoo Infantil de Calêndula", t: "t1", on: 1, s: 9, cat: "Bambini › Cabelo", m: "Verde Vida", p: "36,00" }
+];
+
+// ── Árvore de categorias (UI-06) ──
+(function () {
+  var html = "";
+  TREE.forEach(function (c, i) {
+    var sib = TREE.filter(function (o, j) {
+      if (o.l !== c.l) return false;
+      var a = Math.min(i, j), b = Math.max(i, j);
+      for (var k = a + 1; k < b; k++) if (TREE[k].l < c.l) return false;
+      return true;
+    });
+    var first = sib[0] === c, last = sib[sib.length - 1] === c;
+    html +=
+      '<div class="trow l' + c.l + '">' +
+        '<div class="grow">' + (c.l > 1 ? '<span class="twig">└</span>' : "") +
+          '<a class="tname" href="#UI-07.edicao">' + c.n + "</a><code>" + c.p + "</code>" +
+          '<span class="badge">' + (c.c === 1 ? "1 produto" : c.c + " produtos") + "</span></div>" +
+        '<div class="acts">' +
+          '<a class="btn icon" href="#UI-06.sucesso" aria-label="Subir ' + c.n + '"' + (first ? ' aria-disabled="true"' : "") + ">↑</a>" +
+          '<a class="btn icon" href="#UI-06.sucesso" aria-label="Descer ' + c.n + '"' + (last ? ' aria-disabled="true"' : "") + ">↓</a>" +
+          (c.l < 3 ? '<a class="btn plain" href="#UI-07.novo">Subcategoria</a>' : "") +
+          '<a class="btn plain" href="#UI-07.edicao">Editar</a>' +
+          '<a class="btn plain crit" href="#UI-06.' + (c.del || "excluirRecusada") + '">Excluir</a>' +
+        "</div></div>";
+  });
+  document.getElementById("tree").innerHTML = html;
+})();
+
+// ── Linhas de produto (UI-09) ──
+document.getElementById("prows").innerHTML = PRODUCTS.map(function (p) {
+  var toggle = p.on
+    ? '<a class="btn plain" href="#UI-09.sucesso">Inativar</a>'
+    : '<a class="btn plain" href="#UI-09.' + (p.t ? "sucesso" : "ativarRecusado") + '">Ativar</a>';
+  return "<tr>" +
+    '<td><div class="pcell">' + (p.t ? '<span class="thumb ' + p.t + '"></span>' : '<span class="thumb none">sem foto</span>') +
+      '<a href="#UI-10.edicao">' + p.n + "</a></div></td>" +
+    "<td>" + (p.on ? '<span class="badge success">Ativo</span>' : '<span class="badge">Inativo</span>') + "</td>" +
+    "<td>" + (p.s === 0 ? '<span class="badge critical">Esgotado</span>' : p.s + " un.") + "</td>" +
+    "<td>" + p.cat + "</td><td>" + p.m + "</td>" +
+    '<td class="num">' + (p.promo
+      ? '<span class="badge attention">Promoção</span> R$ ' + p.promo + '<br><span class="strike">R$ ' + p.p + "</span>"
+      : "R$ " + p.p) + "</td>" +
+    '<td class="num">' + toggle + "</td></tr>";
+}).join("");
+
+// ── Estados dependentes de dados ──
+var CAT = {
+  novo:          { t: "Nova categoria", nome: "", pai: 0, pre: "/", slug: "" },
+  obrigatorio:   { t: "Nova categoria", nome: "", pai: 1, pre: "/flora/", slug: "" },
+  slugRepetido:  { t: "Nova categoria", nome: "Cabelo", pai: 1, pre: "/flora/", slug: "cabelo" },
+  slugReservado: { t: "Nova categoria", nome: "Produto", pai: 0, pre: "/", slug: "produto" },
+  profundidade:  { t: "Nova categoria", nome: "Anticaspa", pai: 3, pre: "/flora/cabelo/shampoo/", slug: "anticaspa" },
+  edicao:        { t: "Cabelo", nome: "Cabelo", pai: 1, pre: "/flora/", slug: "cabelo" },
+  ciclo:         { t: "Cabelo", nome: "Cabelo", pai: 3, pre: "/flora/cabelo/shampoo/", slug: "cabelo" },
+  avisoImpacto:  { t: "Cabelo", nome: "Cabelo", pai: 7, pre: "/bambini/", slug: "cabelo" },
+  enviando:      { t: "Cabelo", nome: "Cabelos", pai: 1, pre: "/flora/", slug: "cabelo" },
+  erroEnvio:     { t: "Cabelo", nome: "Cabelos", pai: 1, pre: "/flora/", slug: "cabelo" }
+};
+var GAL = { novo: 0, ativarRecusado: 0, removerUltimaRecusado: 1, galeriaCheia: 8 };
+var NAMES = ["frente", "verso", "rótulo", "textura", "embalagem", "detalhe", "uso", "kit"];
+var INACTIVE = { novo: 1, ativarRecusado: 1 };
+
+function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+function render(screen, state) {
+  // navegação ativa
+  document.querySelectorAll("[data-nav]").forEach(function (a) {
+    a.classList.toggle("active", a.dataset.nav.split(" ").indexOf(screen) >= 0);
+  });
+
+  // valores de exemplo por estado
+  document.querySelectorAll("[data-val]").forEach(function (el) {
+    var v = el.dataset["val" + cap(state)];
+    el.value = v !== undefined ? v : el.dataset.val;
+  });
+
+  if (screen === "UI-07") {
+    var c = CAT[state];
+    document.getElementById("cat-title").textContent = c.t;
+    document.getElementById("cat-nome").value = c.nome;
+    document.getElementById("cat-pai").selectedIndex = c.pai;
+    document.getElementById("cat-prefix").textContent = c.pre;
+    document.getElementById("cat-slug").value = c.slug;
+    var save = document.getElementById("cat-save");
+    save.textContent = state === "enviando" ? "Salvando…" : "Salvar";
+    save.setAttribute("aria-disabled", state === "enviando");
+    save.href = c.t === "Cabelo" ? "#UI-07.avisoImpacto" : "#UI-06.sucesso";
+  }
+
+  if (screen === "UI-10") {
+    var inactive = !!INACTIVE[state];
+    var n = GAL[state] !== undefined ? GAL[state] : 2;
+    document.getElementById("prod-title").textContent =
+      state === "novo" ? "Novo produto" : state === "ativarRecusado" ? "Condicionador de Babosa" : "Shampoo de Camomila";
+    ["prod-badge", "prod-badge2"].forEach(function (id) {
+      var b = document.getElementById(id);
+      b.textContent = inactive ? "Inativo" : "Ativo";
+      b.className = "badge" + (inactive ? "" : " success");
+    });
+    document.getElementById("status-act").innerHTML = inactive
+      ? '<p class="sub" style="margin-bottom:10px">O produto não aparece na loja.</p><a class="btn" href="#UI-10.ativarRecusado">Ativar produto</a>'
+      : '<p class="sub" style="margin-bottom:10px">O produto aparece na loja.</p><a class="btn" href="#UI-10.sucesso">Inativar produto</a>';
+    document.getElementById("gal-count").textContent = n + " de 8";
+
+    var tiles = "";
+    for (var i = 0; i < n; i++) {
+      var rem = n === 1 ? "removerUltimaRecusado" : "removerImagem";
+      tiles += '<div class="tile t' + (i % 4 + 1) + '">' +
+        (i === 0 ? '<span class="badge cover">Capa</span>' : "") +
+        '<span class="tacts">' +
+          (i > 0 ? '<a href="#UI-10.sucesso" aria-label="Mover ' + NAMES[i] + ' para antes">←</a>' : "") +
+          (i < n - 1 ? '<a href="#UI-10.sucesso" aria-label="Mover ' + NAMES[i] + ' para depois">→</a>' : "") +
+          '<a href="#UI-10.' + rem + '" aria-label="Remover ' + NAMES[i] + '">×</a>' +
+        "</span>" + NAMES[i] + "</div>";
+    }
+    if (state === "enviandoImagem") tiles += '<div class="tile busy" role="status">Enviando<br>rótulo.jpg…</div>';
+    if (n === 0 && state !== "novo") tiles = "";
+    document.getElementById("gal").innerHTML = tiles;
+  }
+
+  // campo com erro visível ganha realce
+  document.querySelectorAll(".field").forEach(function (f) {
+    f.classList.toggle("has-err", !!f.querySelector(".err:not([hidden])"));
+  });
+}
+
+Proto.init({
+  "UI-05": { name: "Estrutura do painel e acesso", states: [["default", "Padrão"], ["semPermissao", "Sem permissão"], ["erro", "Erro"]] },
+  "UI-06": { name: "Árvore de categorias", states: [["default", "Padrão"], ["vazio", "Vazio"], ["excluirConfirmacao", "Confirmação de exclusão"], ["excluirRecusada", "Exclusão recusada"], ["sucesso", "Sucesso"]] },
+  "UI-07": { name: "Formulário de categoria", states: [["novo", "Nova"], ["edicao", "Edição"], ["obrigatorio", "Validação: nome"], ["slugRepetido", "Validação: endereço repetido"], ["slugReservado", "Validação: endereço reservado"], ["profundidade", "Validação: profundidade"], ["ciclo", "Validação: ciclo"], ["avisoImpacto", "Aviso de impacto"], ["enviando", "Enviando"], ["erroEnvio", "Erro de envio"]] },
+  "UI-08": { name: "Marcas", states: [["default", "Padrão"], ["vazio", "Vazio"], ["formulario", "Formulário"], ["nomeRepetido", "Validação: nome repetido"], ["enviando", "Enviando"], ["erroEnvio", "Erro de envio"], ["excluirConfirmacao", "Confirmação de exclusão"], ["excluirRecusada", "Exclusão recusada"], ["sucesso", "Sucesso"]] },
+  "UI-09": { name: "Listagem de produtos", states: [["default", "Padrão"], ["vazio", "Vazio"], ["vazioFiltro", "Vazio por filtro"], ["ativarRecusado", "Ativação recusada"], ["sucesso", "Sucesso"]] },
+  "UI-10": { name: "Formulário de produto", states: [["edicao", "Edição"], ["novo", "Novo"], ["validacao", "Validação"], ["enviando", "Enviando"], ["sucesso", "Sucesso"], ["erroEnvio", "Erro de envio"], ["conflito", "Conflito"], ["ativarRecusado", "Ativação recusada"], ["enviandoImagem", "Enviando imagem"], ["imagemRecusada", "Imagem recusada"], ["galeriaCheia", "Galeria cheia"], ["removerImagem", "Confirmação de remoção"], ["removerUltimaRecusado", "Remoção da última recusada"]] }
+}, "UI-09", render);
+</script>
+</body>
+</html>
