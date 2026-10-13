@@ -7,7 +7,7 @@
 **Stack:** ASP.NET Core MVC (.NET 10), Razor, EF Core 10 Code First, SQL Server (Azure SQL em produção), Azure Blob Storage, xUnit
 **Autor:** Michel Banagouro
 **Data:** 2026-10-11
-**Status:** Rascunho
+**Status:** Em execução
 
 Os caminhos de arquivo das tarefas são relativos a `src/FloraBambini.Web/`, salvo quando começam por `tests/` ou `docs/`.
 
@@ -161,7 +161,7 @@ graph TD
 
 #### T-01 — Criar a solução, os projetos e a convenção de módulos
 
-- **Status:** Pendente
+- **Status:** Concluído
 - **Complexidade:** Média
 - **Depende de:** nenhuma
 - **Implementa:** —
@@ -177,9 +177,9 @@ graph TD
 Criar o projeto MVC em .NET 10 e o projeto de testes xUnit. Configurar o MVC para achar views dentro da pasta do módulo (`Catalogo/Loja/Views`, `Catalogo/Admin/Views`) e a rota da área `Admin` sob `/admin`. Deixar uma classe base de teste com `WebApplicationFactory` para as próximas tarefas.
 
 **Critério de aceite (testável):**
-- [ ] `dotnet build` e `dotnet test` passam na raiz do repositório
-- [ ] Um controller de exemplo dentro de uma pasta de módulo tem a view encontrada, na raiz e na área `Admin`
-- [ ] Segredos e connection strings ficam fora do repositório (user secrets em desenvolvimento)
+- [x] `dotnet build` e `dotnet test` passam na raiz do repositório
+- [x] Um controller de exemplo dentro de uma pasta de módulo tem a view encontrada, na raiz e na área `Admin`
+- [x] Segredos e connection strings ficam fora do repositório (user secrets em desenvolvimento)
 
 **Testes a escrever:**
 - *Integration:* `Aplicacao_sobe_e_responde`, `View_de_modulo_e_localizada_na_raiz_e_na_area_Admin`
@@ -877,7 +877,7 @@ Layout Razor com a faixa de avisos lida da configuração, logo, ícones de cont
 - **Telas:** UI-01 (default, aberto, mobile), UI-04 (default, botões de raiz)
 - **Camadas/arquivos afetados:**
   - `Catalogo/Loja/MenuDeCategoriasViewComponent.cs` *(novo)*
-  - `Catalogo/Loja/Views/Shared/Components/MenuDeCategorias/Default.cshtml` *(novo)*
+  - `Compartilhado/Views/Components/MenuDeCategorias/Default.cshtml` *(novo)*
   - `Compartilhado/Views/_LayoutLoja.cshtml`, `wwwroot/css/loja.css` *(editados)*
   - `wwwroot/js/menu.js` *(novo)*
 
@@ -894,6 +894,7 @@ Componente que lê a árvore em memória e renderiza as raízes, o painel com os
 
 **Riscos / pontos de atenção:**
 - O menu roda em toda requisição da loja: não pode tocar o banco, só o retrato em memória.
+- A view do menu fica em `Compartilhado/Views`, não na pasta `Shared` do módulo: o localizador de views da T-01 só enxerga o módulo do controller da requisição e `Compartilhado/Views`, e o menu aparece em páginas de qualquer módulo. — *decidido por Michel em 2026-10-13, R-01 (REVIEW-T-01-2026-10-13)*
 
 ---
 
@@ -1680,3 +1681,4 @@ O único estado fora do banco são os arquivos de imagem. Um banco recriado deix
 
 | Tarefa | Status | Concluída em | Commit | Observação |
 |--------|--------|--------------|--------|------------|
+| T-01 | Concluído | 2026-10-12 | — | Controllers e views de exemplo em `Catalogo/Loja` e `Catalogo/Admin` provam a convenção; saem na T-24. Ambiente dos testes: `Testing`. |
