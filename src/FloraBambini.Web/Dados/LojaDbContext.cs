@@ -1,3 +1,4 @@
+using FloraBambini.Web.Catalogo.Dominio;
 using Microsoft.EntityFrameworkCore;
 
 namespace FloraBambini.Web.Dados;
@@ -10,6 +11,10 @@ namespace FloraBambini.Web.Dados;
 public class LojaDbContext(DbContextOptions<LojaDbContext> options) : DbContext(options)
 {
     public const string NomeDaConexao = "Loja";
+
+    public DbSet<Categoria> Categorias => Set<Categoria>();
+
+    public DbSet<Marca> Marcas => Set<Marca>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
