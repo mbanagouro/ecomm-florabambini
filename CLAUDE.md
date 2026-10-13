@@ -11,23 +11,39 @@ simplicidade operacional vale mais que flexibilidade, e escalabilidade não diri
 
 ## Stack
 
-Ainda não há código no repositório. A stack abaixo é a definida na proposta arquitetural e no PLAN-001.
-
-- **Backend:** ASP.NET Core MVC, .NET 10, views Razor renderizadas no servidor (previsto)
+- **Backend:** ASP.NET Core MVC, .NET 10, views Razor renderizadas no servidor; projeto único em `src/FloraBambini.Web`
 - **Frontend:** não aplicável — sem SPA; JavaScript só para interações pontuais
-- **Banco:** SQL Server via EF Core 10 Code First; Azure SQL Database (tier Basic) em produção, LocalDB em desenvolvimento e teste (previsto)
-- **Infra:** Azure App Service B1 e Azure Blob Storage para imagens; Azurite em desenvolvimento (previsto)
-- **Testes:** xUnit, com `WebApplicationFactory` para rotas e telas (previsto)
+- **Banco:** SQL Server via EF Core 10 Code First; LocalDB em desenvolvimento e teste; Azure SQL Database (tier Basic) em produção (previsto)
+- **Infra:** Azure App Service B1 e Azure Blob Storage para imagens; Azurite em desenvolvimento (previsto, ainda não implementado — ADR-002)
+- **Testes:** xUnit, com `WebApplicationFactory` para rotas e telas; projeto em `tests/FloraBambini.Tests`
 
 ## Comandos
 
-<!-- TODO: nenhum comando de build, teste, execução ou migration detectado — o repositório ainda não tem solução nem projeto. Rodar `/leanwork-context raiz` de novo depois da T-01 do PLAN-001. -->
+Todos rodam da raiz do repositório.
+
+```bash
+# Build
+dotnet build
+
+# Testes — exigem SQL Server LocalDB; cada classe de integração cria e apaga o próprio banco
+dotnet test
+
+# Rodar local — exige a connection string `Loja` em user secrets (README, "Rodando localmente")
+dotnet run --project src/FloraBambini.Web
+
+# Migrations — a pasta de saída não é a padrão do EF
+dotnet ef migrations add <Nome> --project src/FloraBambini.Web --output-dir Dados/Migrations
+dotnet ef database update --project src/FloraBambini.Web
+```
+
+<!-- TODO: nenhum comando de lint/format configurado — não há `.editorconfig` nem analisador no repositório -->
 
 ## Convenções
 
 - Monolito único, organizado por módulo de negócio (`Catalogo`, `Clientes`, `Pedidos`, `Entrega`, `Pagamento`, `Conteudo`), cada um com seus controllers, views, serviços e entidades; nunca por tipo técnico nem em projetos por camada (ADR-001)
 - Loja na raiz e painel na `Area` `Admin`; o perfil `Admin` é exigido por política aplicada à área inteira, não por atributo em cada controller (ADR-001, ADR-004)
 - Sem API pública e sem SPA (ADR-001)
+- Views ficam em `<Modulo>/Loja/Views` e `<Modulo>/Admin/Views`; o módulo sai do namespace do controller. View usada por mais de um módulo (layout, view component) vai em `Compartilhado/Views`: a pasta `Shared` de um módulo não é vista pelos outros (ADR-001)
 - EF Core direto no `DbContext`, sem repositório genérico por cima; o esquema muda só por migration (ADR-002)
 - Imagens vão para o Blob Storage, nunca para `wwwroot` nem para o disco da aplicação (ADR-002)
 - Dinheiro é `decimal` de ponta a ponta, nunca ponto flutuante; só a fronteira com o gateway converte para centavos inteiros (ADR-003)
@@ -41,6 +57,7 @@ Ainda não há código no repositório. A stack abaixo é a definida na proposta
 - Código de domínio em português, com o vocabulário do PRD (`Categoria`, `Produto`, `ServicoDeCategorias`) — premissa do PLAN-001
 - Regra de negócio violada volta como `Resultado` com campo e mensagem, não como exceção — premissa do PLAN-001
 - Testes de cenário do PRD são nomeados `CA_XX_descricao_do_cenario` — premissa do PLAN-001
+- Teste que sobe a aplicação usa `AplicacaoDeTeste` (ambiente `Testing`, que não lê user secrets); teste com banco usa `IClassFixture<BancoDeTeste>`
 - Segredos e connection strings ficam fora do repositório (user secrets em desenvolvimento)
 
 ## Restrições
@@ -60,7 +77,8 @@ Ainda não há código no repositório. A stack abaixo é a definida na proposta
 - **SPEC-UI e protótipos:** `docs/prototype/` — telas (UI-XX) e protótipo navegável de cada PRD
 - **Design de referência:** `docs/design/`
 - **Planos:** `docs/plans/` — tarefas de execução (T-XX)
-- **Reviews:** `docs/reviews/` — relatórios de review (R-XX); a pasta nasce no primeiro review
+- **Reviews:** `docs/reviews/` — relatórios de review (R-XX)
+- **Execução local:** `README.md`, seção "Rodando localmente"
 
 ## Como trabalhar neste projeto
 
