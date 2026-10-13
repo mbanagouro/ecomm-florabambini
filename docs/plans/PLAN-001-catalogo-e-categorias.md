@@ -192,7 +192,7 @@ Criar o projeto MVC em .NET 10 e o projeto de testes xUnit. Configurar o MVC par
 
 #### T-02 — Configurar o EF Core, o contexto e a base de testes com banco
 
-- **Status:** Pendente
+- **Status:** Concluído
 - **Complexidade:** Média
 - **Depende de:** T-01
 - **Implementa:** —
@@ -207,8 +207,8 @@ Criar o projeto MVC em .NET 10 e o projeto de testes xUnit. Configurar o MVC par
 Registrar o `LojaDbContext` com SQL Server, sem repositório genérico por cima. Criar o suporte de teste que gera um banco LocalDB limpo por classe de teste, aplica as migrations e o descarta ao final.
 
 **Critério de aceite (testável):**
-- [ ] A aplicação abre conexão com o banco configurado em desenvolvimento
-- [ ] Um teste de integração cria o banco pelas migrations, grava e lê, e o banco some ao fim da execução
+- [x] A aplicação abre conexão com o banco configurado em desenvolvimento
+- [x] Um teste de integração cria o banco pelas migrations, grava e lê, e o banco some ao fim da execução
 
 **Testes a escrever:**
 - *Integration:* `Banco_de_teste_e_criado_pelas_migrations_e_descartado`
@@ -1682,3 +1682,4 @@ O único estado fora do banco são os arquivos de imagem. Um banco recriado deix
 | Tarefa | Status | Concluída em | Commit | Observação |
 |--------|--------|--------------|--------|------------|
 | T-01 | Concluído | 2026-10-12 | `2ca9b19` | Controllers e views de exemplo em `Catalogo/Loja` e `Catalogo/Admin` provam a convenção; saem na T-24. Ambiente dos testes: `Testing`. |
+| T-02 | Concluído | 2026-10-13 | — | Connection string `Loja` em user secrets; conexão de desenvolvimento conferida com `dotnet ef database update` contra o LocalDB. Sem entidade ainda, o teste grava e lê por SQL numa tabela própria. Fora da lista: pacotes do EF Core no `.csproj` e `Infra/BancoDeTesteTests.cs`. |
