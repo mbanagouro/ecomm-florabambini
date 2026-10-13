@@ -1681,4 +1681,4 @@ O único estado fora do banco são os arquivos de imagem. Um banco recriado deix
 
 | Tarefa | Status | Concluída em | Commit | Observação |
 |--------|--------|--------------|--------|------------|
-| T-01 | Concluído | 2026-10-12 | — | Controllers e views de exemplo em `Catalogo/Loja` e `Catalogo/Admin` provam a convenção; saem na T-24. Ambiente dos testes: `Testing`. |
+| T-01 | Concluído | 2026-10-12 | `2ca9b19` | Controllers e views de exemplo em `Catalogo/Loja` e `Catalogo/Admin` provam a convenção; saem na T-24. Ambiente dos testes: `Testing`. |
