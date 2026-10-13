@@ -1682,4 +1682,4 @@ O único estado fora do banco são os arquivos de imagem. Um banco recriado deix
 | Tarefa | Status | Concluída em | Commit | Observação |
 |--------|--------|--------------|--------|------------|
 | T-01 | Concluído | 2026-10-12 | `2ca9b19` | Controllers e views de exemplo em `Catalogo/Loja` e `Catalogo/Admin` provam a convenção; saem na T-24. Ambiente dos testes: `Testing`. |
-| T-02 | Concluído | 2026-10-13 | — | Connection string `Loja` em user secrets; conexão de desenvolvimento conferida com `dotnet ef database update` contra o LocalDB. Sem entidade ainda, o teste grava e lê por SQL numa tabela própria. Fora da lista: pacotes do EF Core no `.csproj` e `Infra/BancoDeTesteTests.cs`. |
+| T-02 | Concluído | 2026-10-13 | `9cc777b` | Connection string `Loja` em user secrets; conexão de desenvolvimento conferida com `dotnet ef database update` contra o LocalDB. Sem entidade ainda, o teste grava e lê por SQL numa tabela própria. Fora da lista: pacotes do EF Core no `.csproj` e `Infra/BancoDeTesteTests.cs`. |
