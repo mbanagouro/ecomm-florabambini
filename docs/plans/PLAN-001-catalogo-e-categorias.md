@@ -249,7 +249,7 @@ Registrar o `LojaDbContext` com SQL Server, sem repositório genérico por cima.
 
 #### T-04 — Criar as entidades Produto e ImagemProduto com o mapeamento
 
-- **Status:** Pendente
+- **Status:** Concluído
 - **Complexidade:** Baixa
 - **Depende de:** T-03
 - **Implementa:** —
@@ -266,8 +266,8 @@ Registrar o `LojaDbContext` com SQL Server, sem repositório genérico por cima.
 `Produto` com nome, slug, categoria, marca, preço, preço promocional opcional, estoque, descrição, situação (ativo ou inativo), data de cadastro e coluna de versão de linha. `ImagemProduto` com produto, posição e a chave das versões no armazenamento. Preço em `decimal(10,2)`; slug com índice único global; categoria e marca com exclusão restrita.
 
 **Critério de aceite (testável):**
-- [ ] A migration cria as tabelas, o índice único de slug e as chaves estrangeiras restritas
-- [ ] O banco recusa excluir categoria ou marca referenciada por produto
+- [x] A migration cria as tabelas, o índice único de slug e as chaves estrangeiras restritas
+- [x] O banco recusa excluir categoria ou marca referenciada por produto
 
 **Testes a escrever:**
 - *Integration:* `Banco_recusa_excluir_categoria_ou_marca_com_produto`, `Indice_recusa_slug_de_produto_repetido`
@@ -1706,7 +1706,7 @@ O único estado fora do banco são os arquivos de imagem. Um banco recriado deix
 ## 9. Pontos de validação humana
 
 - [ ] Após **T-01** — confirmar a organização de pastas e a convenção de módulos antes de qualquer outra tarefa escrever arquivo
-- [ ] Após **T-03** e **T-04** — revisar o SQL das migrations
+- [x] Após **T-03** e **T-04** — revisar o SQL das migrations
 - [ ] Após **T-06** — revisar a política da área e confirmar que o esquema de desenvolvimento não existe fora de `Development`
 - [ ] Antes de **T-21** — confirmar a licença do ImageSharp, ou indicar outra biblioteca
 - [ ] Após a **Fase 3** — revisar as regras implementadas contra o PRD antes de construir telas sobre elas
@@ -1731,3 +1731,4 @@ O único estado fora do banco são os arquivos de imagem. Um banco recriado deix
 | T-01 | Concluído | 2026-10-12 | `2ca9b19` | Controllers e views de exemplo em `Catalogo/Loja` e `Catalogo/Admin` provam a convenção; saem na T-24. Ambiente dos testes: `Testing`. |
 | T-02 | Concluído | 2026-10-13 | `9cc777b` | Connection string `Loja` em user secrets; conexão de desenvolvimento conferida com `dotnet ef database update` contra o LocalDB. Sem entidade ainda, o teste grava e lê por SQL numa tabela própria. Fora da lista: pacotes do EF Core no `.csproj` e `Infra/BancoDeTesteTests.cs`. |
 | T-03 | Concluído | 2026-10-13 | `e0d5a6e` | Migration `CategoriasEMarcas` em `Dados/Migrations`. O EF filtra por padrão o índice único sobre coluna anulável (`WHERE CategoriaPaiId IS NOT NULL`), o que deixaria duas raízes repetirem o slug; o filtro foi removido com `HasFilter(null)` e o SQL conferido. `Nome` e `Slug` com 100 caracteres (o PRD não fixa limite); `Marca.Nome` com collation `SQL_Latin1_General_CP1_CI_AS` explícita. Fora da lista: `Designer.cs` e `LojaDbContextModelSnapshot.cs` (gerados pelo EF) e `tests/.../Catalogo/IndicesDeCategoriaEMarcaTests.cs`, com dois testes além do plano (`Exclusao_de_categoria_com_filha_e_recusada_pelo_banco`, `Indice_recusa_marca_repetida_sem_distinguir_maiusculas`). `DbSet<Categoria>` e `DbSet<Marca>` acrescentados ao `LojaDbContext` depois do review, a pedido do Michel; os testes seguem com `Set<T>()`. Pendente: revisão humana do SQL da migration antes da T-04. |
+| T-04 | Concluído | 2026-10-14 | — | Migration `Produtos` em `Dados/Migrations`. `ImagemProduto` sai com o produto (FK em cascata); categoria e marca com restrição. SQL revisado. Situação nasce `Inativo` (RN-22); descrição em `nvarchar(max)` (RN-20), nome e slug com 150. |

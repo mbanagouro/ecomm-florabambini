@@ -16,6 +16,10 @@ public class LojaDbContext(DbContextOptions<LojaDbContext> options) : DbContext(
 
     public DbSet<Marca> Marcas => Set<Marca>();
 
+    public DbSet<Produto> Produtos => Set<Produto>();
+
+    public DbSet<ImagemProduto> ImagensProduto => Set<ImagemProduto>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(LojaDbContext).Assembly);
