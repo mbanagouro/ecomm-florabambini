@@ -47,6 +47,20 @@ docs/
   reviews/        relatórios de review (R-XX)
 ```
 
+## Rodando localmente
+
+Pré-requisitos: SDK do .NET 10, SQL Server LocalDB (vem com o Visual Studio) e a ferramenta do EF Core (`dotnet tool install --global dotnet-ef`).
+
+A connection string não fica no repositório. Em desenvolvimento ela vai para os user secrets do projeto web, com o nome `Loja`:
+
+```bash
+dotnet user-secrets set "ConnectionStrings:Loja" "Server=(localdb)\MSSQLLocalDB;Database=FloraBambini;Integrated Security=true;TrustServerCertificate=true" --project src/FloraBambini.Web
+dotnet ef database update --project src/FloraBambini.Web
+dotnet run --project src/FloraBambini.Web
+```
+
+O segundo comando cria o banco e aplica as migrations. Os testes (`dotnet test`) não usam essa configuração: cada classe de teste de integração cria e apaga o próprio banco no LocalDB.
+
 ## Reproduzindo o pipeline
 
 ```bash

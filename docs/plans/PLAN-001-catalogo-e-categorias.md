@@ -7,7 +7,7 @@
 **Stack:** ASP.NET Core MVC (.NET 10), Razor, EF Core 10 Code First, SQL Server (Azure SQL em produção), Azure Blob Storage, xUnit
 **Autor:** Michel Banagouro
 **Data:** 2026-10-11
-**Status:** Rascunho
+**Status:** Em execução
 
 Os caminhos de arquivo das tarefas são relativos a `src/FloraBambini.Web/`, salvo quando começam por `tests/` ou `docs/`.
 
@@ -161,7 +161,7 @@ graph TD
 
 #### T-01 — Criar a solução, os projetos e a convenção de módulos
 
-- **Status:** Pendente
+- **Status:** Concluído
 - **Complexidade:** Média
 - **Depende de:** nenhuma
 - **Implementa:** —
@@ -177,9 +177,9 @@ graph TD
 Criar o projeto MVC em .NET 10 e o projeto de testes xUnit. Configurar o MVC para achar views dentro da pasta do módulo (`Catalogo/Loja/Views`, `Catalogo/Admin/Views`) e a rota da área `Admin` sob `/admin`. Deixar uma classe base de teste com `WebApplicationFactory` para as próximas tarefas.
 
 **Critério de aceite (testável):**
-- [ ] `dotnet build` e `dotnet test` passam na raiz do repositório
-- [ ] Um controller de exemplo dentro de uma pasta de módulo tem a view encontrada, na raiz e na área `Admin`
-- [ ] Segredos e connection strings ficam fora do repositório (user secrets em desenvolvimento)
+- [x] `dotnet build` e `dotnet test` passam na raiz do repositório
+- [x] Um controller de exemplo dentro de uma pasta de módulo tem a view encontrada, na raiz e na área `Admin`
+- [x] Segredos e connection strings ficam fora do repositório (user secrets em desenvolvimento)
 
 **Testes a escrever:**
 - *Integration:* `Aplicacao_sobe_e_responde`, `View_de_modulo_e_localizada_na_raiz_e_na_area_Admin`
@@ -192,7 +192,7 @@ Criar o projeto MVC em .NET 10 e o projeto de testes xUnit. Configurar o MVC par
 
 #### T-02 — Configurar o EF Core, o contexto e a base de testes com banco
 
-- **Status:** Pendente
+- **Status:** Concluído
 - **Complexidade:** Média
 - **Depende de:** T-01
 - **Implementa:** —
@@ -207,8 +207,8 @@ Criar o projeto MVC em .NET 10 e o projeto de testes xUnit. Configurar o MVC par
 Registrar o `LojaDbContext` com SQL Server, sem repositório genérico por cima. Criar o suporte de teste que gera um banco LocalDB limpo por classe de teste, aplica as migrations e o descarta ao final.
 
 **Critério de aceite (testável):**
-- [ ] A aplicação abre conexão com o banco configurado em desenvolvimento
-- [ ] Um teste de integração cria o banco pelas migrations, grava e lê, e o banco some ao fim da execução
+- [x] A aplicação abre conexão com o banco configurado em desenvolvimento
+- [x] Um teste de integração cria o banco pelas migrations, grava e lê, e o banco some ao fim da execução
 
 **Testes a escrever:**
 - *Integration:* `Banco_de_teste_e_criado_pelas_migrations_e_descartado`
@@ -220,7 +220,7 @@ Registrar o `LojaDbContext` com SQL Server, sem repositório genérico por cima.
 
 #### T-03 — Criar as entidades Categoria e Marca com o mapeamento
 
-- **Status:** Pendente
+- **Status:** Concluído
 - **Complexidade:** Baixa
 - **Depende de:** T-02
 - **Implementa:** —
@@ -235,8 +235,8 @@ Registrar o `LojaDbContext` com SQL Server, sem repositório genérico por cima.
 `Categoria` com nome, slug, categoria pai opcional e posição; `Marca` com nome. Índice único em (pai, slug), que no SQL Server também impede duas raízes com o mesmo slug, e índice único no nome da marca com comparação sem distinção de maiúsculas. Só estrutura; as regras entram na Fase 2.
 
 **Critério de aceite (testável):**
-- [ ] A migration cria as duas tabelas e os dois índices únicos
-- [ ] O banco recusa duas categorias com o mesmo slug sob o mesmo pai, inclusive entre raízes, e aceita o mesmo slug sob pais diferentes
+- [x] A migration cria as duas tabelas e os dois índices únicos
+- [x] O banco recusa duas categorias com o mesmo slug sob o mesmo pai, inclusive entre raízes, e aceita o mesmo slug sob pais diferentes
 
 **Testes a escrever:**
 - *Integration:* `Indice_recusa_slug_repetido_entre_irmas_e_entre_raizes`, `Indice_aceita_mesmo_slug_sob_pais_diferentes`
@@ -249,7 +249,7 @@ Registrar o `LojaDbContext` com SQL Server, sem repositório genérico por cima.
 
 #### T-04 — Criar as entidades Produto e ImagemProduto com o mapeamento
 
-- **Status:** Pendente
+- **Status:** Concluído
 - **Complexidade:** Baixa
 - **Depende de:** T-03
 - **Implementa:** —
@@ -259,13 +259,15 @@ Registrar o `LojaDbContext` com SQL Server, sem repositório genérico por cima.
   - `Catalogo/Dominio/Produto.cs`, `Catalogo/Dominio/ImagemProduto.cs` *(novos)*
   - `Catalogo/Dados/ProdutoConfiguration.cs`, `Catalogo/Dados/ImagemProdutoConfiguration.cs` *(novos)*
   - `Dados/Migrations/*_Produtos.cs` *(novo)*
+  - `Dados/LojaDbContext.cs` *(editado: `DbSet` de `Produto` e `ImagemProduto`)*
+  - `tests/FloraBambini.Tests/Catalogo/IndicesERestricoesDeProdutoTests.cs` *(novo)*
 
 **Descrição:**
 `Produto` com nome, slug, categoria, marca, preço, preço promocional opcional, estoque, descrição, situação (ativo ou inativo), data de cadastro e coluna de versão de linha. `ImagemProduto` com produto, posição e a chave das versões no armazenamento. Preço em `decimal(10,2)`; slug com índice único global; categoria e marca com exclusão restrita.
 
 **Critério de aceite (testável):**
-- [ ] A migration cria as tabelas, o índice único de slug e as chaves estrangeiras restritas
-- [ ] O banco recusa excluir categoria ou marca referenciada por produto
+- [x] A migration cria as tabelas, o índice único de slug e as chaves estrangeiras restritas
+- [x] O banco recusa excluir categoria ou marca referenciada por produto
 
 **Testes a escrever:**
 - *Integration:* `Banco_recusa_excluir_categoria_ou_marca_com_produto`, `Indice_recusa_slug_de_produto_repetido`
@@ -278,7 +280,7 @@ Registrar o `LojaDbContext` com SQL Server, sem repositório genérico por cima.
 
 #### T-05 — Implementar o gerador de slug e a lista de endereços reservados
 
-- **Status:** Pendente
+- **Status:** Concluído
 - **Complexidade:** Baixa
 - **Depende de:** T-01
 - **Implementa:** RN-03, RN-04
@@ -287,14 +289,15 @@ Registrar o `LojaDbContext` com SQL Server, sem repositório genérico por cima.
 - **Camadas/arquivos afetados:**
   - `Catalogo/Dominio/Slug.cs` *(novo)*
   - `Catalogo/Servicos/EnderecosReservados.cs` *(novo)*
+  - `tests/FloraBambini.Tests/Catalogo/SlugTests.cs`, `tests/FloraBambini.Tests/Catalogo/EnderecosReservadosTests.cs` *(novos)*
 
 **Descrição:**
 Função pura que transforma um nome em slug (minúsculas, sem acentos, espaços e pontuação viram hífen, sem hífen repetido nem nas pontas) e que valida um slug digitado. `EnderecosReservados` responde se um slug de raiz colide com uma rota da aplicação; a lista é derivada das rotas registradas, com os segmentos fixos do PRD como piso (`produto`, `admin`, `carrinho`, `checkout`, `conta`).
 
 **Critério de aceite (testável):**
-- [ ] "Shampoo de Camomila" vira `shampoo-de-camomila`; "Acessórios" vira `acessorios`
-- [ ] Slug com caractere inválido é recusado na validação
-- [ ] `produto` e `admin` são reservados; `flora` não é
+- [x] "Shampoo de Camomila" vira `shampoo-de-camomila`; "Acessórios" vira `acessorios`
+- [x] Slug com caractere inválido é recusado na validação
+- [x] `produto` e `admin` são reservados; `flora` não é
 
 **Testes a escrever:**
 - *Unit:* `Slug_e_gerado_sem_acentos_e_com_hifens`, `Slug_invalido_e_recusado`, `CA_04_Slug_de_rota_existente_e_reservado`
@@ -317,6 +320,7 @@ Função pura que transforma um nome em slug (minúsculas, sem acentos, espaços
   - `Compartilhado/Acesso/AutenticacaoDeDesenvolvimento.cs` *(novo)*
   - `Program.cs` *(editado)*
   - `tests/FloraBambini.Tests/Infra/AutenticacaoDeTeste.cs` *(novo)*
+  - `tests/FloraBambini.Tests/Compartilhado/Acesso/PoliticaDoPainelTests.cs` *(novo)*
 
 **Descrição:**
 Aplicar uma política que exige o perfil `Admin` a todos os controllers da área, por convenção, sem depender de atributo em cada controller. Registrar, só no ambiente `Development`, um esquema que autentica como `Admin`. Nos testes, um esquema próprio permite simular visitante anônimo, perfil `Cliente` e perfil `Admin`.
@@ -355,6 +359,7 @@ Aplicar uma política que exige o perfil `Admin` a todos os controllers da área
   - `Catalogo/Servicos/ArvoreDeCategorias.cs` *(novo)*
   - `Catalogo/Servicos/NoDaArvore.cs` *(novo)*
   - `Program.cs` *(editado)*
+  - `tests/FloraBambini.Tests/Catalogo/ArvoreDeCategoriasTests.cs` *(novo)*
 
 **Descrição:**
 Serviço de instância única que lê todas as categorias de uma vez e monta um retrato imutável da árvore: para cada nó, nível, caminho de slugs, filhas na ordem de posição e ancestrais. Expõe busca por caminho, por identificador e a lista de descendentes. `Invalidar()` descarta o retrato, e a leitura seguinte recarrega do banco.
@@ -383,6 +388,7 @@ Serviço de instância única que lê todas as categorias de uma vez e monta um 
 - **Camadas/arquivos afetados:**
   - `Catalogo/Servicos/ServicoDeCategorias.cs` *(novo)*
   - `Compartilhado/Resultado.cs` *(novo)*
+  - `tests/FloraBambini.Tests/Catalogo/CriacaoEEdicaoDeCategoriaTests.cs` *(novo)*
 
 **Descrição:**
 Criar e alterar categoria (nome, slug, pai). Categoria nova entra na última posição entre as irmãs. Recusa slug repetido entre irmãs e slug reservado em raiz. Regra violada volta como resultado com o campo e a mensagem da SPEC-UI, não como exceção; esse tipo `Resultado` passa a ser o padrão dos serviços do módulo.
@@ -412,6 +418,7 @@ Criar e alterar categoria (nome, slug, pai). Categoria nova entra na última pos
   - `Catalogo/Servicos/ServicoDeCategorias.cs` *(editado)*
   - `Catalogo/OpcoesDoCatalogo.cs` *(novo)*
   - `appsettings.json` *(editado)*
+  - `tests/FloraBambini.Tests/Catalogo/ProfundidadeECicloDeCategoriaTests.cs` *(novo)*
 
 **Descrição:**
 Ao criar ou trocar o pai, recusar quando a categoria, ou o descendente mais fundo dela, passaria do nível máximo, e quando o pai escolhido é a própria categoria ou um descendente. O limite (3) vem da configuração.
@@ -443,6 +450,8 @@ Ao criar ou trocar o pai, recusar quando a categoria, ou o descendente mais fund
   - `Catalogo/Servicos/ServicoDeRedirecionamentos.cs` *(novo)*
   - `Catalogo/Servicos/ServicoDeCategorias.cs` *(editado)*
   - `Dados/Migrations/*_Redirecionamentos.cs` *(novo)*
+  - `Dados/LojaDbContext.cs` *(editado: `DbSet` de `Redirecionamento`)*
+  - `tests/FloraBambini.Tests/Catalogo/RedirecionamentoDeCategoriaTests.cs` *(novo)*
 
 **Descrição:**
 Quando slug ou pai mudam, gravar o caminho antigo da categoria e de cada descendente. O redirecionamento aponta para a **categoria**, não para um caminho de destino: o destino é sempre o caminho atual dela, o que elimina cadeia por construção. Ao gravar uma categoria num caminho que consta como antigo, o redirecionamento daquele caminho é descartado. Tudo na mesma transação da alteração.
@@ -472,6 +481,7 @@ Quando slug ou pai mudam, gravar o caminho antigo da categoria e de cada descend
 - **Camadas/arquivos afetados:**
   - `Catalogo/Servicos/ServicoDeCategorias.cs` *(editado)*
   - `Catalogo/Servicos/ImpactoDeMudancaDeCaminho.cs` *(novo)*
+  - `tests/FloraBambini.Tests/Catalogo/ImpactoDeMudancaDeCaminhoTests.cs` *(novo)*
 
 **Descrição:**
 Dada uma alteração proposta, devolver a lista de categorias afetadas com o caminho antigo e o novo de cada uma. A gravação de uma alteração que muda caminho só acontece com confirmação explícita; sem ela, o serviço devolve o impacto e não grava. Alteração que só muda nome ou posição não gera impacto.
@@ -499,6 +509,7 @@ Dada uma alteração proposta, devolver a lista de categorias afetadas com o cam
 - **Decisões base:** ADR-010
 - **Camadas/arquivos afetados:**
   - `Catalogo/Servicos/ServicoDeCategorias.cs` *(editado)*
+  - `tests/FloraBambini.Tests/Catalogo/ExclusaoEReordenacaoDeCategoriaTests.cs` *(novo)*
 
 **Descrição:**
 Excluir só categoria sem filhas e sem produto vinculado, ativo ou inativo; a recusa informa quantas filhas e quantos produtos impedem. Subir e descer uma categoria troca a posição com a irmã vizinha e não muda caminho nenhum.
@@ -527,6 +538,7 @@ Excluir só categoria sem filhas e sem produto vinculado, ativo ou inativo; a re
 - **Camadas/arquivos afetados:**
   - `Catalogo/Servicos/ArvoreDeCategorias.cs` *(editado)*
   - `Catalogo/Servicos/NoDaArvore.cs` *(editado)*
+  - `tests/FloraBambini.Tests/Catalogo/ContagemDeProdutosPorCategoriaTests.cs` *(novo)*
 
 **Descrição:**
 Incluir no retrato da árvore a quantidade de produtos ativos de cada nó somada à dos descendentes, calculada com uma consulta agrupada na carga. Essa contagem serve à árvore do painel (RN-10) e, mais adiante, à regra de quem aparece no menu (RN-24).
@@ -553,6 +565,7 @@ Incluir no retrato da árvore a quantidade de produtos ativos de cada nó somada
 - **Decisões base:** ADR-010
 - **Camadas/arquivos afetados:**
   - `Catalogo/Servicos/ServicoDeMarcas.cs` *(novo)*
+  - `tests/FloraBambini.Tests/Catalogo/CadastroDeMarcaTests.cs` *(novo)*
 
 **Descrição:**
 Gravar marca com o nome sem espaços nas pontas, recusando nome que já exista sem distinguir maiúsculas. Excluir só marca que nenhum produto usa; a recusa informa quantos produtos usam. Listar as marcas com a contagem de produtos, ativos e inativos.
@@ -588,6 +601,7 @@ Gravar marca com o nome sem espaços nas pontas, recusando nome que já exista s
 - **Decisões base:** ADR-010
 - **Camadas/arquivos afetados:**
   - `Catalogo/Servicos/ServicoDeProdutos.cs` *(novo)*
+  - `tests/FloraBambini.Tests/Catalogo/CadastroDeProdutoTests.cs` *(novo)*
 
 **Descrição:**
 Criar e alterar produto exigindo nome, slug, uma categoria de qualquer nível e uma marca. Todo produto novo nasce inativo. O slug é único na loja inteira. Criar um produto, ou trocar a categoria dele, invalida a árvore, por causa da contagem da T-13.
@@ -615,6 +629,7 @@ Criar e alterar produto exigindo nome, slug, uma categoria de qualquer nível e 
 - **Camadas/arquivos afetados:**
   - `Catalogo/Dominio/Produto.cs` *(editado)*
   - `Catalogo/Servicos/ServicoDeProdutos.cs` *(editado)*
+  - `tests/FloraBambini.Tests/Catalogo/PrecoEEstoqueDeProdutoTests.cs` *(novo)*
 
 **Descrição:**
 Preço maior que zero com duas casas; promocional, quando preenchido, maior que zero e menor que o preço; estoque inteiro maior ou igual a zero. `Produto.PrecoVigente` devolve o promocional quando existe e o preço caso contrário, e `Produto.Esgotado` é estoque zero. Vitrine e painel usam essas duas propriedades.
@@ -641,6 +656,7 @@ Preço maior que zero com duas casas; promocional, quando preenchido, maior que 
 - **Decisões base:** ADR-007
 - **Camadas/arquivos afetados:**
   - `Catalogo/Servicos/ServicoDeProdutos.cs` *(editado)*
+  - `tests/FloraBambini.Tests/Catalogo/ConcorrenciaDeProdutoTests.cs` *(novo)*
 
 **Descrição:**
 A alteração recebe a versão de linha lida quando o formulário foi aberto. Se o produto mudou desde então, nada é gravado e o serviço devolve um resultado específico de conflito, distinto de validação e de erro.
@@ -668,6 +684,7 @@ A alteração recebe a versão de linha lida quando o formulário foi aberto. Se
 - **Camadas/arquivos afetados:**
   - `Catalogo/Servicos/SaneadorDeDescricao.cs` *(novo)*
   - `Catalogo/Servicos/ServicoDeProdutos.cs` *(editado)*
+  - `tests/FloraBambini.Tests/Catalogo/SaneadorDeDescricaoTests.cs` *(novo)*
 
 **Descrição:**
 Antes de gravar, reduzir a descrição a parágrafo, negrito, itálico, listas e link, removendo qualquer outra marcação, atributo e esquema de URL que não seja `http`, `https` ou `mailto`. O que fica no banco já é o conteúdo saneado.
@@ -695,6 +712,7 @@ Antes de gravar, reduzir a descrição a parágrafo, negrito, itálico, listas e
 - **Camadas/arquivos afetados:**
   - `Catalogo/Servicos/ServicoDeRedirecionamentos.cs` *(editado)*
   - `Catalogo/Servicos/ServicoDeProdutos.cs` *(editado)*
+  - `tests/FloraBambini.Tests/Catalogo/RedirecionamentoDeProdutoTests.cs` *(novo)*
 
 **Descrição:**
 Ao alterar o slug de um produto, registrar o slug antigo apontando para o produto, com as mesmas regras da T-10: sem cadeia, e descartando o redirecionamento quando outro produto passa a ocupar o slug antigo.
@@ -724,6 +742,7 @@ Ao alterar o slug de um produto, registrar o slug antigo apontando para o produt
   - `Catalogo/Dados/ArmazenamentoEmBlob.cs` *(novo)*
   - `Program.cs`, `appsettings.Development.json` *(editados)*
   - `tests/FloraBambini.Tests/Infra/ArmazenamentoEmMemoria.cs` *(novo)*
+  - `tests/FloraBambini.Tests/Catalogo/ArmazenamentoDeImagensTests.cs` *(novo)*
 
 **Descrição:**
 Contrato para gravar um arquivo sob uma chave, apagar por chave e montar a URL pública. Implementação com Azure Blob Storage, apontando para o Azurite em desenvolvimento, e uma implementação em memória para os testes.
@@ -753,6 +772,7 @@ Contrato para gravar um arquivo sob uma chave, apagar por chave e montar a URL p
 - **Camadas/arquivos afetados:**
   - `Catalogo/Servicos/ProcessadorDeImagem.cs` *(novo)*
   - `Catalogo/OpcoesDoCatalogo.cs` *(editado)*
+  - `tests/FloraBambini.Tests/Catalogo/ProcessadorDeImagemTests.cs` *(novo)*
 
 **Descrição:**
 Recusar arquivo que não seja JPG, PNG ou WebP (pelo conteúdo, não pela extensão), com mais de 1 MB ou com menos de 1000 × 1000 px, devolvendo o motivo. Para arquivo válido, cortar ao centro em quadrado e gerar grande (1000), média (500), mini (250) e thumb (100). Limites e dimensões vêm da configuração.
@@ -780,6 +800,7 @@ Recusar arquivo que não seja JPG, PNG ou WebP (pelo conteúdo, não pela extens
 - **Decisões base:** ADR-002
 - **Camadas/arquivos afetados:**
   - `Catalogo/Servicos/ServicoDeGaleria.cs` *(novo)*
+  - `tests/FloraBambini.Tests/Catalogo/GaleriaDoProdutoTests.cs` *(novo)*
 
 **Descrição:**
 Adicionar imagem ao fim da galeria, recusando a nona. Mover uma imagem uma posição para antes ou para depois; a primeira é a capa. Remover uma imagem apaga o registro e as quatro versões no armazenamento.
@@ -808,6 +829,7 @@ Adicionar imagem ao fim da galeria, recusando a nona. Mover uma imagem uma posi�
 - **Camadas/arquivos afetados:**
   - `Catalogo/Servicos/ServicoDeProdutos.cs` *(editado)*
   - `Catalogo/Servicos/ServicoDeGaleria.cs` *(editado)*
+  - `tests/FloraBambini.Tests/Catalogo/AtivacaoDeProdutoTests.cs` *(novo)*
 
 **Descrição:**
 Ativar só produto com ao menos uma imagem. Recusar a remoção da última imagem de um produto ativo. Inativar é sempre permitido. Não existe operação de exclusão de produto no serviço. Ativar e inativar invalidam a árvore.
@@ -841,13 +863,15 @@ Ativar só produto com ao menos uma imagem. Recusar a remoção da última image
 - **Implementa:** —
 - **Valida:** —
 - **Decisões base:** ADR-001
-- **Telas:** UI-01 (default, só a moldura: faixa de avisos, logo, ícones), UI-04 (default)
+- **Telas:** UI-01 (default), UI-04 (default)
 - **Camadas/arquivos afetados:**
   - `Compartilhado/Views/_LayoutLoja.cshtml` *(novo)*
   - `Compartilhado/Views/NaoEncontrado.cshtml` *(novo)*
   - `wwwroot/css/loja-base.css` *(novo, cópia de `docs/design/styles.css`)*
   - `wwwroot/css/loja.css` *(novo, regras extras de `prototipo-001/loja.html`)*
   - `Program.cs` *(editado)*
+  - `tests/FloraBambini.Tests/Compartilhado/LayoutDaLojaTests.cs` *(novo)*
+  - `tests/FloraBambini.Tests/Compartilhado/Mvc/LocalizadorDeViewsPorModuloTests.cs` *(editado)*
 
 **Descrição:**
 Layout Razor com a faixa de avisos lida da configuração, logo, ícones de conta e carrinho sem comportamento, e rodapé mínimo. Página 404 no visual da loja, servida para qualquer rota sem destino com status 404. O espaço do menu fica reservado para a T-25.
@@ -861,6 +885,7 @@ Layout Razor com a faixa de avisos lida da configuração, logo, ícones de cont
 - *Integration:* `Rota_inexistente_responde_404_com_a_pagina_da_loja`, `Faixa_de_avisos_some_sem_textos_configurados`
 
 **Riscos / pontos de atenção:**
+- Da UI-01 entra só a moldura: faixa de avisos, logo e ícones.
 - `loja-base.css` é cópia fiel do design: ajustes vão em `loja.css`, para que o design possa ser atualizado sem conflito.
 - Os botões de raiz da UI-04 dependem do menu e entram na T-25.
 
@@ -874,12 +899,13 @@ Layout Razor com a faixa de avisos lida da configuração, logo, ícones de cont
 - **Implementa:** RN-24, RN-11, RN-34
 - **Valida:** CA-29, CA-14
 - **Decisões base:** ADR-010
-- **Telas:** UI-01 (default, aberto, mobile), UI-04 (default, botões de raiz)
+- **Telas:** UI-01 (default, aberto, mobile), UI-04 (default)
 - **Camadas/arquivos afetados:**
   - `Catalogo/Loja/MenuDeCategoriasViewComponent.cs` *(novo)*
-  - `Catalogo/Loja/Views/Shared/Components/MenuDeCategorias/Default.cshtml` *(novo)*
+  - `Compartilhado/Views/Components/MenuDeCategorias/Default.cshtml` *(novo)*
   - `Compartilhado/Views/_LayoutLoja.cshtml`, `wwwroot/css/loja.css` *(editados)*
   - `wwwroot/js/menu.js` *(novo)*
+  - `tests/FloraBambini.Tests/Catalogo/MenuDeCategoriasTests.cs` *(novo)*
 
 **Descrição:**
 Componente que lê a árvore em memória e renderiza as raízes, o painel com os níveis 2 e 3 e a gaveta para tela estreita, na posição definida no painel. Categoria com contagem zero de produtos ativos (própria e de descendentes) não é renderizada. O painel abre por foco e por ponteiro só com CSS; o JavaScript cuida apenas de abrir e fechar a gaveta.
@@ -893,7 +919,9 @@ Componente que lê a árvore em memória e renderiza as raízes, o painel com os
 - *Integration:* `CA_29_Categoria_sem_produto_ativo_nao_aparece_no_menu`, `CA_14_Categoria_excluida_sai_do_menu`, `Menu_respeita_a_posicao_entre_irmas`
 
 **Riscos / pontos de atenção:**
+- Da UI-04 entram só os botões de raiz, que dependem do menu.
 - O menu roda em toda requisição da loja: não pode tocar o banco, só o retrato em memória.
+- A view do menu fica em `Compartilhado/Views`, não na pasta `Shared` do módulo: o localizador de views da T-01 só enxerga o módulo do controller da requisição e `Compartilhado/Views`, e o menu aparece em páginas de qualquer módulo. — *decidido por Michel em 2026-10-13, R-01 (REVIEW-T-01-2026-10-13)*
 
 ---
 
@@ -909,6 +937,7 @@ Componente que lê a árvore em memória e renderiza as raízes, o painel com os
 - **Camadas/arquivos afetados:**
   - `Catalogo/Loja/CategoriaController.cs` *(novo)*
   - `Program.cs` *(editado)*
+  - `tests/FloraBambini.Tests/Catalogo/RotaDeCategoriaTests.cs` *(novo)*
 
 **Descrição:**
 Rota genérica de menor prioridade que recebe o caminho inteiro. Ordem de resolução: categoria real; senão, redirecionamento, respondendo 301 para o caminho atual da categoria alvo; senão, 404. Nesta tarefa a action devolve só uma página mínima com o nome da categoria; a listagem entra na T-30.
@@ -938,6 +967,7 @@ Rota genérica de menor prioridade que recebe o caminho inteiro. Ordem de resolu
 - **Camadas/arquivos afetados:**
   - `Catalogo/Servicos/ConsultaDeListagem.cs` *(novo)*
   - `Catalogo/Servicos/IVendasPorProduto.cs`, `Catalogo/Servicos/SemVendas.cs` *(novos)*
+  - `tests/FloraBambini.Tests/Catalogo/ConsultaDeListagemTests.cs` *(novo)*
 
 **Descrição:**
 Buscar, numa consulta, os produtos ativos da categoria e dos descendentes (identificadores vindos da árvore em memória) e ordenar: disponíveis antes de esgotados; depois Mais vendidos, Novos ou Menor preço vigente; empate pelo cadastro mais recente e, persistindo, pelo nome. As unidades pagas vêm de `IVendasPorProduto`, cuja implementação atual devolve zero para todos, até o módulo de Pedidos existir.
@@ -966,6 +996,7 @@ Buscar, numa consulta, os produtos ativos da categoria e dos descendentes (ident
 - **Camadas/arquivos afetados:**
   - `Catalogo/Servicos/ConsultaDeListagem.cs` *(editado)*
   - `Catalogo/OpcoesDoCatalogo.cs` *(editado)*
+  - `tests/FloraBambini.Tests/Catalogo/FiltroDeMarcaELotesTests.cs` *(novo)*
 
 **Descrição:**
 A consulta passa a devolver as marcas presentes entre os produtos ativos da listagem sem filtro, aceitar uma ou mais marcas selecionadas e entregar um lote por vez (12, da configuração), com o total e a indicação de que há lote seguinte. O filtro combina com qualquer ordenação.
@@ -991,10 +1022,11 @@ A consulta passa a devolver as marcas presentes entre os produtos ativos da list
 - **Implementa:** RN-31, RN-17, RN-33
 - **Valida:** CA-39
 - **Decisões base:** —
-- **Telas:** UI-02 (default, fim: `CardProduto` nos estados default, promoção e esgotado), UI-03 (default, promocao: `Preco` e `Breadcrumb`)
+- **Telas:** UI-02 (default, fim), UI-03 (default, promocao)
 - **Camadas/arquivos afetados:**
   - `Catalogo/Loja/Views/Shared/_CardProduto.cshtml`, `_Preco.cshtml`, `_Breadcrumb.cshtml` *(novos)*
   - `wwwroot/css/loja.css` *(editado)*
+  - `tests/FloraBambini.Tests/Catalogo/ComponentesDeProdutoTests.cs` *(novo)*
 
 **Descrição:**
 Parciais reutilizáveis. `Preco` mostra o preço vigente e, em promoção, o normal riscado. `CardProduto` mostra capa (versão mini), marca, nome e preço, com a etiqueta "Esgotado" e a imagem atenuada quando o estoque é zero; o card inteiro é link para o produto. `Breadcrumb` recebe o caminho e começa em "Início".
@@ -1008,6 +1040,7 @@ Parciais reutilizáveis. `Preco` mostra o preço vigente e, em promoção, o nor
 - *Integration:* `CA_39_Preco_promocional_mostra_o_normal_riscado`, `Card_de_produto_esgotado_tem_a_etiqueta`, `Preco_usa_formato_brasileiro_em_qualquer_cultura_do_servidor`
 
 **Riscos / pontos de atenção:**
+- Das telas entram só os componentes: da UI-02, o `CardProduto` nos estados default, promoção e esgotado; da UI-03, `Preco` e `Breadcrumb`.
 - Nome longo não pode quebrar a grade: conferir com um nome de 80 caracteres.
 
 ---
@@ -1026,6 +1059,7 @@ Parciais reutilizáveis. `Preco` mostra o preço vigente e, em promoção, o nor
   - `Catalogo/Loja/Views/Categoria/Listagem.cshtml` *(novo)*
   - `Catalogo/Loja/ListagemViewModel.cs` *(novo)*
   - `wwwroot/css/loja.css` *(editado)*
+  - `tests/FloraBambini.Tests/Catalogo/ListagemDeCategoriaTests.cs` *(novo)*
 
 **Descrição:**
 Página renderizada no servidor: breadcrumb, nome, total, links das filhas diretas que têm produto ativo, formulário `GET` com marcas e ordenação (com o botão "Aplicar"), grade do lote pedido e o link "Próxima página" quando há lote seguinte. Com marca selecionada, a página declara como canônico o endereço da categoria. Categoria sem produto ativo mostra a mensagem de vazio, sem a barra de filtro. Tudo funciona sem JavaScript.
@@ -1087,6 +1121,7 @@ Quando o link "Próxima página" entra na área visível, o script busca aquele 
   - `Catalogo/Loja/ProdutoController.cs` *(novo)*
   - `Catalogo/Loja/Views/Produto/Detalhe.cshtml` *(novo)*
   - `wwwroot/css/loja.css` *(editado)*
+  - `tests/FloraBambini.Tests/Catalogo/PaginaDeProdutoTests.cs` *(novo)*
 
 **Descrição:**
 `/produto/{slug}` mostra miniaturas (thumb), imagem principal (média), marca, nome, preço, disponibilidade, descrição saneada e o breadcrumb da categoria do produto. Com estoque zero, "Esgotado" e um aviso no lugar do botão de compra. O botão "Adicionar à cesta" é só marcação: o comportamento é do PRD de carrinho. Slug antigo responde 301; produto inativo ou inexistente, 404.
@@ -1117,6 +1152,7 @@ Quando o link "Próxima página" entra na área visível, o script busca aquele 
 - **Camadas/arquivos afetados:**
   - `wwwroot/js/produto.js` *(novo)*
   - `Catalogo/Loja/Views/Produto/Detalhe.cshtml`, `wwwroot/css/loja.css` *(editados)*
+  - `tests/FloraBambini.Tests/Catalogo/PaginaDeProdutoTests.cs` *(editado)*
 
 **Descrição:**
 Clicar numa miniatura troca a imagem principal pela versão média correspondente. Clicar na imagem principal abre a versão grande sobre fundo escurecido, com "Fechar", tecla Esc e foco preso enquanto aberta. Sem JavaScript, a imagem principal é um link para a versão grande.
@@ -1157,6 +1193,7 @@ Clicar numa miniatura troca a imagem principal pela versão média correspondent
   - `Compartilhado/Views/AcessoNegado.cshtml`, `Compartilhado/Views/ErroDoPainel.cshtml` *(novos)*
   - `wwwroot/css/painel.css` *(novo, a partir de `prototipo-001/admin.html`)*
   - `Program.cs` *(editado)*
+  - `tests/FloraBambini.Tests/Compartilhado/LayoutDoPainelTests.cs` *(novo)*
 
 **Descrição:**
 Layout com barra superior e navegação lateral (Produtos, Categorias, Marcas, "Ver loja"), que vira faixa horizontal em tela estreita. `/admin` leva à listagem de produtos. Perfil sem permissão vê a página inteira de acesso negado; erro não tratado numa rota do painel mostra a página de erro do painel, com "Nada foi alterado".
@@ -1188,6 +1225,7 @@ Layout com barra superior e navegação lateral (Produtos, Categorias, Marcas, "
   - `Compartilhado/Views/Painel/_Aviso.cshtml`, `_Dialogo.cshtml`, `_MensagemTemporaria.cshtml`, `_EstadoVazio.cshtml`, `_Selo.cshtml` *(novos)*
   - `wwwroot/js/painel.js` *(novo)*
   - `wwwroot/css/painel.css` *(editado)*
+  - `tests/FloraBambini.Tests/Compartilhado/ComponentesDoPainelTests.cs` *(novo)*
 
 **Descrição:**
 Parciais dos cinco componentes da seção 5 da SPEC-UI. A mensagem temporária é alimentada por `TempData` depois de um redirecionamento. O diálogo de confirmação usa o elemento `dialog` nativo, e o envio só acontece ao confirmar. O script também desabilita o botão de envio e troca o texto para "Salvando…" enquanto um formulário é enviado, o que cobre o estado `.enviando` de todas as telas e previne envio duplo.
@@ -1217,6 +1255,7 @@ Parciais dos cinco componentes da seção 5 da SPEC-UI. A mensagem temporária �
 - **Camadas/arquivos afetados:**
   - `Catalogo/Admin/Views/Shared/_SeletorCategoria.cshtml`, `_CampoEndereco.cshtml` *(novos)*
   - `wwwroot/js/endereco.js` *(novo)*
+  - `tests/FloraBambini.Tests/Catalogo/SeletorDeCategoriaTests.cs` *(novo)*
 
 **Descrição:**
 `SeletorCategoria` lista a árvore inteira com o caminho completo de cada opção ("Flora › Cabelo › Shampoo") e uma opção vazia configurável. `CampoEndereco` mostra um prefixo fixo e o trecho editável do slug; num cadastro novo, sugere o slug a partir do nome enquanto o campo não foi editado à mão; numa edição, nunca muda sozinho.
@@ -1247,6 +1286,7 @@ Parciais dos cinco componentes da seção 5 da SPEC-UI. A mensagem temporária �
 - **Camadas/arquivos afetados:**
   - `Catalogo/Admin/CategoriasController.cs` *(novo)*
   - `Catalogo/Admin/Views/Categorias/Arvore.cshtml` *(novo)*
+  - `tests/FloraBambini.Tests/Catalogo/ArvoreDoPainelTests.cs` *(novo)*
 
 **Descrição:**
 Árvore indentada com nome, endereço, contagem e as ações de subir, descer, "Subcategoria", "Editar" e "Excluir". As setas ficam desabilitadas na primeira e na última irmã, e a linha de nível 3 não oferece "Subcategoria". Excluir pede confirmação; a recusa aparece como aviso crítico com as contagens que impedem.
@@ -1278,6 +1318,7 @@ Parciais dos cinco componentes da seção 5 da SPEC-UI. A mensagem temporária �
   - `Catalogo/Admin/CategoriasController.cs` *(editado)*
   - `Catalogo/Admin/Views/Categorias/Formulario.cshtml` *(novo)*
   - `Catalogo/Admin/CategoriaFormModel.cs` *(novo)*
+  - `tests/FloraBambini.Tests/Catalogo/FormularioDeCategoriaTests.cs` *(novo)*
 
 **Descrição:**
 Formulário de criação e edição com Nome, Categoria pai e Endereço na loja, cujo prefixo acompanha o pai escolhido. Cada recusa do serviço aparece no campo correspondente, com o texto da SPEC-UI. Falha ao gravar mostra o aviso crítico e mantém o que foi digitado. "Subcategoria", na árvore, abre o formulário com o pai já escolhido. Alteração que muda caminho fica para a T-39.
@@ -1308,6 +1349,7 @@ Formulário de criação e edição com Nome, Categoria pai e Endereço na loja,
   - `Catalogo/Admin/CategoriasController.cs` *(editado)*
   - `Catalogo/Admin/Views/Categorias/Formulario.cshtml` *(editado)*
   - `Catalogo/Admin/Views/Categorias/_AvisoDeImpacto.cshtml` *(novo)*
+  - `tests/FloraBambini.Tests/Catalogo/AvisoDeImpactoTests.cs` *(novo)*
 
 **Descrição:**
 Salvar uma alteração de slug ou de pai devolve o formulário com o diálogo "Os endereços vão mudar": a quantidade de categorias afetadas e a lista de pares antigo e novo, com rolagem interna quando longa. "Confirmar alteração" reenvia o formulário com a confirmação; "Cancelar" fecha o diálogo sem gravar.
@@ -1338,6 +1380,7 @@ Salvar uma alteração de slug ou de pai devolve o formulário com o diálogo "O
 - **Camadas/arquivos afetados:**
   - `Catalogo/Admin/MarcasController.cs` *(novo)*
   - `Catalogo/Admin/Views/Marcas/Lista.cshtml`, `_FormularioDeMarca.cshtml` *(novos)*
+  - `tests/FloraBambini.Tests/Catalogo/TelaDeMarcasTests.cs` *(novo)*
 
 **Descrição:**
 Tabela com nome, quantidade de produtos e as ações "Editar" e "Excluir". Criar e editar acontecem num diálogo com o campo Nome. Nome repetido aparece como erro no campo; exclusão de marca em uso aparece como aviso crítico com a quantidade de produtos.
@@ -1367,6 +1410,7 @@ Tabela com nome, quantidade de produtos e as ações "Editar" e "Excluir". Criar
 - **Camadas/arquivos afetados:**
   - `Catalogo/Admin/ProdutosController.cs` *(novo)*
   - `Catalogo/Admin/Views/Produtos/Lista.cshtml` *(novo)*
+  - `tests/FloraBambini.Tests/Catalogo/ListagemDeProdutosDoPainelTests.cs` *(novo)*
 
 **Descrição:**
 Tabela com miniatura (ou "sem foto"), nome, situação, estoque (ou o selo "Esgotado"), caminho da categoria, marca e preço, com o selo "Promoção" e o preço normal riscado quando há promocional. Abas Todos, Ativos e Inativos, e filtro por nome, por parâmetros de URL. Não existe ação de excluir.
@@ -1395,6 +1439,7 @@ Tabela com miniatura (ou "sem foto"), nome, situação, estoque (ou o selo "Esgo
 - **Telas:** UI-09 (ativarRecusado, sucesso)
 - **Camadas/arquivos afetados:**
   - `Catalogo/Admin/ProdutosController.cs`, `Catalogo/Admin/Views/Produtos/Lista.cshtml` *(editados)*
+  - `tests/FloraBambini.Tests/Catalogo/AtivacaoPelaListagemTests.cs` *(novo)*
 
 **Descrição:**
 Ação de linha "Ativar" ou "Inativar". Ativar produto sem imagem mostra o aviso crítico com o nome do produto e o botão "Adicionar imagem", que leva ao formulário dele. Sucesso mostra a mensagem temporária com o nome do produto e o efeito na loja. A aba e o filtro em uso são preservados.
@@ -1425,6 +1470,7 @@ Ação de linha "Ativar" ou "Inativar". Ativar produto sem imagem mostra o aviso
   - `Catalogo/Admin/ProdutosController.cs` *(editado)*
   - `Catalogo/Admin/Views/Produtos/Formulario.cshtml` *(novo)*
   - `Catalogo/Admin/ProdutoFormModel.cs` *(novo)*
+  - `tests/FloraBambini.Tests/Catalogo/FormularioDeProdutoTests.cs` *(novo)*
 
 **Descrição:**
 Formulário em duas colunas, como no protótipo, com os cartões de dados, preço, estoque, organização e endereço. A descrição entra como área de texto simples (o editor vem na T-44), e os cartões de imagens e de situação ficam reservados (T-46, T-48). Erros de validação aparecem no topo, com a contagem e os nomes dos campos, e em cada campo. Salvar um produto novo leva à edição dele.
@@ -1451,11 +1497,12 @@ Formulário em duas colunas, como no protótipo, com os cartões de dados, preç
 - **Implementa:** RN-20
 - **Valida:** CA-25
 - **Decisões base:** —
-- **Telas:** UI-10 (edicao, novo: editor de descrição)
+- **Telas:** UI-10 (edicao, novo)
 - **Camadas/arquivos afetados:**
   - `wwwroot/js/descricao.js` *(novo)*
   - `wwwroot/lib/quill/` *(novo)*
   - `Catalogo/Admin/Views/Produtos/Formulario.cshtml` *(editado)*
+  - `tests/FloraBambini.Tests/Catalogo/FormularioDeProdutoTests.cs` *(editado)*
 
 **Descrição:**
 Substituir a área de texto por um editor com apenas negrito, itálico, lista com marcadores, lista numerada e link. O conteúdo vai ao servidor num campo oculto e passa pelo saneador da T-18, que continua sendo o controle real. Sem JavaScript, a área de texto simples continua funcionando.
@@ -1470,6 +1517,7 @@ Substituir a área de texto por um editor com apenas negrito, itálico, lista co
 - O comportamento do editor é verificação manual (premissa da seção 3).
 
 **Riscos / pontos de atenção:**
+- Da UI-10 entra só o editor de descrição, nos dois estados.
 - O editor é conveniência, não segurança: nenhum caminho de gravação pode pular o saneador.
 - A biblioteca é servida da própria aplicação, sem CDN.
 
@@ -1486,6 +1534,7 @@ Substituir a área de texto por um editor com apenas negrito, itálico, lista co
 - **Telas:** UI-10 (conflito)
 - **Camadas/arquivos afetados:**
   - `Catalogo/Admin/ProdutosController.cs`, `Catalogo/Admin/Views/Produtos/Formulario.cshtml` *(editados)*
+  - `tests/FloraBambini.Tests/Catalogo/ConflitoDeEdicaoNoFormularioTests.cs` *(novo)*
 
 **Descrição:**
 O formulário carrega a versão do produto num campo oculto. Quando o serviço devolve conflito, a tela mostra o aviso de atenção, mantém os valores digitados nos campos, desabilita "Salvar" e oferece "Recarregar", que abre a edição com os dados atuais.
@@ -1516,6 +1565,7 @@ O formulário carrega a versão do produto num campo oculto. Quando o serviço d
   - `Catalogo/Admin/Views/Produtos/_Galeria.cshtml` *(novo)*
   - `Catalogo/Admin/Views/Produtos/Formulario.cshtml` *(editado)*
   - `wwwroot/js/galeria.js` *(novo)*
+  - `tests/FloraBambini.Tests/Catalogo/EnvioDeImagensTests.cs` *(novo)*
 
 **Descrição:**
 Cartão "Imagens" com o contador "N de 8", as imagens em grade (thumb), a área de envio com a recomendação de formato, peso e dimensão, e um formulário de envio de vários arquivos. Em produto ainda não salvo, o cartão mostra só "Salve o produto para enviar as imagens". Arquivo recusado aparece numa lista com nome e motivo; os válidos do mesmo envio entram. Com 8 imagens, a área de envio dá lugar ao aviso de limite. O script mostra o quadro "Enviando…".
@@ -1545,6 +1595,7 @@ Cartão "Imagens" com o contador "N de 8", as imagens em grade (thumb), a área 
 - **Telas:** UI-10 (removerImagem, removerUltimaRecusado, sucesso)
 - **Camadas/arquivos afetados:**
   - `Catalogo/Admin/GaleriaController.cs`, `Catalogo/Admin/Views/Produtos/_Galeria.cshtml` *(editados)*
+  - `tests/FloraBambini.Tests/Catalogo/ReordenarERemoverImagensTests.cs` *(novo)*
 
 **Descrição:**
 Cada imagem ganha as setas para antes e para depois e o botão de remover. A primeira leva o selo "Capa". Remover pede confirmação avisando que todas as versões são apagadas. Remover a única imagem de um produto ativo mostra o aviso com as duas saídas: enviar outra imagem ou inativar.
@@ -1573,6 +1624,7 @@ Cada imagem ganha as setas para antes e para depois e o botão de remover. A pri
 - **Telas:** UI-10 (edicao, novo, ativarRecusado, sucesso)
 - **Camadas/arquivos afetados:**
   - `Catalogo/Admin/ProdutosController.cs`, `Catalogo/Admin/Views/Produtos/Formulario.cshtml` *(editados)*
+  - `tests/FloraBambini.Tests/Catalogo/SituacaoDoProdutoNoFormularioTests.cs` *(novo)*
 
 **Descrição:**
 Cartão "Situação" com o selo Ativo ou Inativo e o botão "Ativar produto" ou "Inativar produto", como ação separada de "Salvar". Em produto novo, o cartão só explica que o produto nasce inativo. Ativar sem imagem mostra o aviso crítico no topo. O selo ao lado do título acompanha a situação.
@@ -1658,7 +1710,7 @@ O único estado fora do banco são os arquivos de imagem. Um banco recriado deix
 ## 9. Pontos de validação humana
 
 - [ ] Após **T-01** — confirmar a organização de pastas e a convenção de módulos antes de qualquer outra tarefa escrever arquivo
-- [ ] Após **T-03** e **T-04** — revisar o SQL das migrations
+- [x] Após **T-03** e **T-04** — revisar o SQL das migrations
 - [ ] Após **T-06** — revisar a política da área e confirmar que o esquema de desenvolvimento não existe fora de `Development`
 - [ ] Antes de **T-21** — confirmar a licença do ImageSharp, ou indicar outra biblioteca
 - [ ] Após a **Fase 3** — revisar as regras implementadas contra o PRD antes de construir telas sobre elas
@@ -1680,3 +1732,8 @@ O único estado fora do banco são os arquivos de imagem. Um banco recriado deix
 
 | Tarefa | Status | Concluída em | Commit | Observação |
 |--------|--------|--------------|--------|------------|
+| T-01 | Concluído | 2026-10-12 | `2ca9b19` | Controllers e views de exemplo em `Catalogo/Loja` e `Catalogo/Admin` provam a convenção; saem na T-24. Ambiente dos testes: `Testing`. |
+| T-02 | Concluído | 2026-10-13 | `9cc777b` | Connection string `Loja` em user secrets; conexão de desenvolvimento conferida com `dotnet ef database update` contra o LocalDB. Sem entidade ainda, o teste grava e lê por SQL numa tabela própria. Fora da lista: pacotes do EF Core no `.csproj` e `Infra/BancoDeTesteTests.cs`. |
+| T-03 | Concluído | 2026-10-13 | `e0d5a6e` | Migration `CategoriasEMarcas` em `Dados/Migrations`. O EF filtra por padrão o índice único sobre coluna anulável (`WHERE CategoriaPaiId IS NOT NULL`), o que deixaria duas raízes repetirem o slug; o filtro foi removido com `HasFilter(null)` e o SQL conferido. `Nome` e `Slug` com 100 caracteres (o PRD não fixa limite); `Marca.Nome` com collation `SQL_Latin1_General_CP1_CI_AS` explícita. Fora da lista: `Designer.cs` e `LojaDbContextModelSnapshot.cs` (gerados pelo EF) e `tests/.../Catalogo/IndicesDeCategoriaEMarcaTests.cs`, com dois testes além do plano (`Exclusao_de_categoria_com_filha_e_recusada_pelo_banco`, `Indice_recusa_marca_repetida_sem_distinguir_maiusculas`). `DbSet<Categoria>` e `DbSet<Marca>` acrescentados ao `LojaDbContext` depois do review, a pedido do Michel; os testes seguem com `Set<T>()`. Pendente: revisão humana do SQL da migration antes da T-04. |
+| T-04 | Concluído | 2026-10-14 | `9cdbe76` | Migration `Produtos` em `Dados/Migrations`. `ImagemProduto` sai com o produto (FK em cascata); categoria e marca com restrição. SQL revisado. Situação nasce `Inativo` (RN-22); descrição em `nvarchar(max)` (RN-20), nome e slug com 150. |
+| T-05 | Concluído | 2026-10-21 | `8c2539c` | `EnderecosReservados` lê o `EndpointDataSource` a cada consulta: reserva o primeiro segmento fixo de cada rota (literal, ou o controller de rota convencional, como `exemplo`) e soma os cinco segmentos do PRD. Ainda não está registrado no DI: entra quando o serviço de categorias o usar. Validação com `\z`, não `$`, para não aceitar quebra de linha no fim. Dois testes além do plano: `Primeiro_segmento_fixo_de_rota_registrada_e_reservado` e `Controller_da_rota_convencional_da_aplicacao_e_reservado` (contra as rotas reais). |
