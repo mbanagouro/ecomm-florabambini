@@ -863,7 +863,7 @@ Ativar só produto com ao menos uma imagem. Recusar a remoção da última image
 - **Implementa:** —
 - **Valida:** —
 - **Decisões base:** ADR-001
-- **Telas:** UI-01 (default, só a moldura: faixa de avisos, logo, ícones), UI-04 (default)
+- **Telas:** UI-01 (default), UI-04 (default)
 - **Camadas/arquivos afetados:**
   - `Compartilhado/Views/_LayoutLoja.cshtml` *(novo)*
   - `Compartilhado/Views/NaoEncontrado.cshtml` *(novo)*
@@ -885,6 +885,7 @@ Layout Razor com a faixa de avisos lida da configuração, logo, ícones de cont
 - *Integration:* `Rota_inexistente_responde_404_com_a_pagina_da_loja`, `Faixa_de_avisos_some_sem_textos_configurados`
 
 **Riscos / pontos de atenção:**
+- Da UI-01 entra só a moldura: faixa de avisos, logo e ícones.
 - `loja-base.css` é cópia fiel do design: ajustes vão em `loja.css`, para que o design possa ser atualizado sem conflito.
 - Os botões de raiz da UI-04 dependem do menu e entram na T-25.
 
@@ -898,7 +899,7 @@ Layout Razor com a faixa de avisos lida da configuração, logo, ícones de cont
 - **Implementa:** RN-24, RN-11, RN-34
 - **Valida:** CA-29, CA-14
 - **Decisões base:** ADR-010
-- **Telas:** UI-01 (default, aberto, mobile), UI-04 (default, botões de raiz)
+- **Telas:** UI-01 (default, aberto, mobile), UI-04 (default)
 - **Camadas/arquivos afetados:**
   - `Catalogo/Loja/MenuDeCategoriasViewComponent.cs` *(novo)*
   - `Compartilhado/Views/Components/MenuDeCategorias/Default.cshtml` *(novo)*
@@ -918,6 +919,7 @@ Componente que lê a árvore em memória e renderiza as raízes, o painel com os
 - *Integration:* `CA_29_Categoria_sem_produto_ativo_nao_aparece_no_menu`, `CA_14_Categoria_excluida_sai_do_menu`, `Menu_respeita_a_posicao_entre_irmas`
 
 **Riscos / pontos de atenção:**
+- Da UI-04 entram só os botões de raiz, que dependem do menu.
 - O menu roda em toda requisição da loja: não pode tocar o banco, só o retrato em memória.
 - A view do menu fica em `Compartilhado/Views`, não na pasta `Shared` do módulo: o localizador de views da T-01 só enxerga o módulo do controller da requisição e `Compartilhado/Views`, e o menu aparece em páginas de qualquer módulo. — *decidido por Michel em 2026-10-13, R-01 (REVIEW-T-01-2026-10-13)*
 
@@ -1020,7 +1022,7 @@ A consulta passa a devolver as marcas presentes entre os produtos ativos da list
 - **Implementa:** RN-31, RN-17, RN-33
 - **Valida:** CA-39
 - **Decisões base:** —
-- **Telas:** UI-02 (default, fim: `CardProduto` nos estados default, promoção e esgotado), UI-03 (default, promocao: `Preco` e `Breadcrumb`)
+- **Telas:** UI-02 (default, fim), UI-03 (default, promocao)
 - **Camadas/arquivos afetados:**
   - `Catalogo/Loja/Views/Shared/_CardProduto.cshtml`, `_Preco.cshtml`, `_Breadcrumb.cshtml` *(novos)*
   - `wwwroot/css/loja.css` *(editado)*
@@ -1038,6 +1040,7 @@ Parciais reutilizáveis. `Preco` mostra o preço vigente e, em promoção, o nor
 - *Integration:* `CA_39_Preco_promocional_mostra_o_normal_riscado`, `Card_de_produto_esgotado_tem_a_etiqueta`, `Preco_usa_formato_brasileiro_em_qualquer_cultura_do_servidor`
 
 **Riscos / pontos de atenção:**
+- Das telas entram só os componentes: da UI-02, o `CardProduto` nos estados default, promoção e esgotado; da UI-03, `Preco` e `Breadcrumb`.
 - Nome longo não pode quebrar a grade: conferir com um nome de 80 caracteres.
 
 ---
@@ -1494,7 +1497,7 @@ Formulário em duas colunas, como no protótipo, com os cartões de dados, preç
 - **Implementa:** RN-20
 - **Valida:** CA-25
 - **Decisões base:** —
-- **Telas:** UI-10 (edicao, novo: editor de descrição)
+- **Telas:** UI-10 (edicao, novo)
 - **Camadas/arquivos afetados:**
   - `wwwroot/js/descricao.js` *(novo)*
   - `wwwroot/lib/quill/` *(novo)*
@@ -1514,6 +1517,7 @@ Substituir a área de texto por um editor com apenas negrito, itálico, lista co
 - O comportamento do editor é verificação manual (premissa da seção 3).
 
 **Riscos / pontos de atenção:**
+- Da UI-10 entra só o editor de descrição, nos dois estados.
 - O editor é conveniência, não segurança: nenhum caminho de gravação pode pular o saneador.
 - A biblioteca é servida da própria aplicação, sem CDN.
 
