@@ -280,7 +280,7 @@ Registrar o `LojaDbContext` com SQL Server, sem repositório genérico por cima.
 
 #### T-05 — Implementar o gerador de slug e a lista de endereços reservados
 
-- **Status:** Pendente
+- **Status:** Concluído
 - **Complexidade:** Baixa
 - **Depende de:** T-01
 - **Implementa:** RN-03, RN-04
@@ -295,9 +295,9 @@ Registrar o `LojaDbContext` com SQL Server, sem repositório genérico por cima.
 Função pura que transforma um nome em slug (minúsculas, sem acentos, espaços e pontuação viram hífen, sem hífen repetido nem nas pontas) e que valida um slug digitado. `EnderecosReservados` responde se um slug de raiz colide com uma rota da aplicação; a lista é derivada das rotas registradas, com os segmentos fixos do PRD como piso (`produto`, `admin`, `carrinho`, `checkout`, `conta`).
 
 **Critério de aceite (testável):**
-- [ ] "Shampoo de Camomila" vira `shampoo-de-camomila`; "Acessórios" vira `acessorios`
-- [ ] Slug com caractere inválido é recusado na validação
-- [ ] `produto` e `admin` são reservados; `flora` não é
+- [x] "Shampoo de Camomila" vira `shampoo-de-camomila`; "Acessórios" vira `acessorios`
+- [x] Slug com caractere inválido é recusado na validação
+- [x] `produto` e `admin` são reservados; `flora` não é
 
 **Testes a escrever:**
 - *Unit:* `Slug_e_gerado_sem_acentos_e_com_hifens`, `Slug_invalido_e_recusado`, `CA_04_Slug_de_rota_existente_e_reservado`
@@ -1732,3 +1732,4 @@ O único estado fora do banco são os arquivos de imagem. Um banco recriado deix
 | T-02 | Concluído | 2026-10-13 | `9cc777b` | Connection string `Loja` em user secrets; conexão de desenvolvimento conferida com `dotnet ef database update` contra o LocalDB. Sem entidade ainda, o teste grava e lê por SQL numa tabela própria. Fora da lista: pacotes do EF Core no `.csproj` e `Infra/BancoDeTesteTests.cs`. |
 | T-03 | Concluído | 2026-10-13 | `e0d5a6e` | Migration `CategoriasEMarcas` em `Dados/Migrations`. O EF filtra por padrão o índice único sobre coluna anulável (`WHERE CategoriaPaiId IS NOT NULL`), o que deixaria duas raízes repetirem o slug; o filtro foi removido com `HasFilter(null)` e o SQL conferido. `Nome` e `Slug` com 100 caracteres (o PRD não fixa limite); `Marca.Nome` com collation `SQL_Latin1_General_CP1_CI_AS` explícita. Fora da lista: `Designer.cs` e `LojaDbContextModelSnapshot.cs` (gerados pelo EF) e `tests/.../Catalogo/IndicesDeCategoriaEMarcaTests.cs`, com dois testes além do plano (`Exclusao_de_categoria_com_filha_e_recusada_pelo_banco`, `Indice_recusa_marca_repetida_sem_distinguir_maiusculas`). `DbSet<Categoria>` e `DbSet<Marca>` acrescentados ao `LojaDbContext` depois do review, a pedido do Michel; os testes seguem com `Set<T>()`. Pendente: revisão humana do SQL da migration antes da T-04. |
 | T-04 | Concluído | 2026-10-14 | `9cdbe76` | Migration `Produtos` em `Dados/Migrations`. `ImagemProduto` sai com o produto (FK em cascata); categoria e marca com restrição. SQL revisado. Situação nasce `Inativo` (RN-22); descrição em `nvarchar(max)` (RN-20), nome e slug com 150. |
+| T-05 | Concluído | 2026-10-21 | — | `EnderecosReservados` lê o `EndpointDataSource` a cada consulta: reserva o primeiro segmento fixo de cada rota (literal, ou o controller de rota convencional, como `exemplo`) e soma os cinco segmentos do PRD. Ainda não está registrado no DI: entra quando o serviço de categorias o usar. Validação com `\z`, não `$`, para não aceitar quebra de linha no fim. Dois testes além do plano: `Primeiro_segmento_fixo_de_rota_registrada_e_reservado` e `Controller_da_rota_convencional_da_aplicacao_e_reservado` (contra as rotas reais). |
